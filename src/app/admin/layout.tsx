@@ -22,16 +22,19 @@ const navItems = [
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { isLoading, isAdmin, signOut } = useAuth();
+  const { isLoading, user, signOut } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
 
-  // Redirect non-admin users away after auth resolves
+  console.log("[AdminLayout] state:", { isLoading, userEmail: user?.email, pathname });
+
+  // If no user after auth resolves, redirect to login
   useEffect(() => {
-    if (!isLoading && !isAdmin && pathname !== "/admin/login") {
+    if (!isLoading && !user && pathname !== "/admin/login") {
+      console.log("[AdminLayout] No user, redirecting to /admin/login");
       router.push("/admin/login");
     }
-  }, [isLoading, isAdmin, pathname, router]);
+  }, [isLoading, user, pathname, router]);
 
   const fetchUnreadCount = useCallback(async () => {
     const { count } = await supabase
@@ -42,12 +45,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }, []);
 
   useEffect(() => {
-    if (!isLoading && isAdmin) {
+    if (!isLoading && user) {
       fetchUnreadCount();
       const interval = setInterval(fetchUnreadCount, 15000);
       return () => clearInterval(interval);
     }
-  }, [isLoading, isAdmin, fetchUnreadCount]);
+  }, [isLoading, user, fetchUnreadCount]);
 
   if (pathname === "/admin/login") return <>{children}</>;
 
@@ -63,8 +66,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     );
   }
 
-  // Non-admin redirect (fallback — useEffect handles it too)
-  if (!isAdmin) {
+  // No user after loading — useEffect handles redirect
+  if (!user) {
     return (
       <div className="min-h-screen bg-paper flex items-center justify-center">
         <div className="flex items-center gap-2 text-ink-faded text-sm font-body">

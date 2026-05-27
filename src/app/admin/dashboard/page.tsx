@@ -57,8 +57,10 @@ interface ContactMessageRow {
 export default function AdminDashboard() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { isLoading: authLoading } = useAuth();
+  const { isLoading: authLoading, user, session, profile } = useAuth();
   const initialTab = (searchParams.get("tab") as Tab) || "overview";
+
+  console.log("[Dashboard] Auth state:", { isLoading: authLoading, user: user?.email, session: !!session, profile });
   const [tab, setTab] = useState<Tab>(initialTab);
   const [searchTerm, setSearchTerm] = useState("");
   const [articlesList, setArticlesList] = useState<ArticleRow[]>([]);
@@ -110,23 +112,25 @@ export default function AdminDashboard() {
 
   const fetchArticles = useCallback(async () => {
     setLoading(true);
+    console.log("[Dashboard] Fetching articles...");
     const { data, error } = await supabase
       .from("articles")
       .select("*")
       .order("created_at", { ascending: false });
-    if (error) { console.error("Fetch error:", error); showNotification("error", "Failed to load articles."); }
-    else { setArticlesList(data as ArticleRow[] || []); }
+    if (error) { console.error("[Dashboard] Fetch articles error:", error); showNotification("error", "Failed to load articles."); }
+    else { console.log("[Dashboard] Articles fetched:", data?.length); setArticlesList(data as ArticleRow[] || []); }
     setLoading(false);
   }, [showNotification]);
 
   const fetchComments = useCallback(async () => {
     setCommentsLoading(true);
+    console.log("[Dashboard] Fetching comments...");
     const { data, error } = await supabase
       .from("comments")
       .select("*")
       .order("created_at", { ascending: false });
-    if (error) { console.error("Fetch comments error:", error); showNotification("error", "Failed to load comments."); }
-    else { setCommentsList(data as CommentRow[] || []); }
+    if (error) { console.error("[Dashboard] Fetch comments error:", error); showNotification("error", "Failed to load comments."); }
+    else { console.log("[Dashboard] Comments fetched:", data?.length); setCommentsList(data as CommentRow[] || []); }
     setCommentsLoading(false);
   }, [showNotification]);
 
@@ -189,20 +193,29 @@ export default function AdminDashboard() {
   };
 
   useEffect(() => {
-    if (!authLoading) {
+    if (!authLoading && user) {
+      console.log("[Dashboard] Auth ready, fetching data for user:", user.email);
+      // Verify session is valid before running queries
+      supabase.auth.getUser().then(({ data, error }) => {
+        if (error) {
+          console.error("[Dashboard] getUser() failed:", error);
+          return;
+        }
+        console.log("[Dashboard] getUser() confirmed:", data.user?.email);
+      });
       fetchArticles();
       fetchComments();
       loadCategories();
       fetchMessages();
     }
-  }, [authLoading, fetchArticles, fetchComments, loadCategories]);
+  }, [authLoading, user, fetchArticles, fetchComments, loadCategories]);
 
   // Auto-refetch when contacts tab is focused
   useEffect(() => {
-    if (tab === "contacts" && !authLoading) {
+    if (tab === "contacts" && !authLoading && user) {
       fetchMessages();
     }
-  }, [tab, authLoading]);
+  }, [tab, authLoading, user]);
 
   const handlePublish = async (id: string, isPublished: boolean) => {
     const { error } = await supabase.from("articles").update({ is_published: !isPublished }).eq("id", id);

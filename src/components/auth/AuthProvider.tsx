@@ -30,16 +30,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchAndSetProfile = useCallback(async (userId: string, email: string) => {
+    console.log("[Auth] Fetching profile for user:", userId);
     const p = await ensureProfile(userId, email);
+    console.log("[Auth] Profile result:", p);
     setProfile(p);
   }, []);
 
   useEffect(() => {
     let mounted = true;
 
-    // 1. Get initial session
     supabase.auth.getSession().then(({ data: { session: s } }) => {
       if (!mounted) return;
+
+      console.log("[Auth] Initial session:", s?.user?.email || "none");
 
       setSession(s);
       setUser(s?.user ?? null);
@@ -53,10 +56,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsLoading(false);
     });
 
-    // 2. Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, s) => {
         if (!mounted) return;
+
+        console.log("[Auth] Auth state changed:", _event, s?.user?.email || "none");
 
         setSession(s);
         setUser(s?.user ?? null);
@@ -78,6 +82,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [fetchAndSetProfile]);
 
   const signOut = useCallback(async () => {
+    console.log("[Auth] Signing out");
     await supabase.auth.signOut();
     setUser(null);
     setSession(null);
