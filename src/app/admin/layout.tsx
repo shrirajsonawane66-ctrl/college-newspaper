@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -25,13 +25,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const { isLoading, user, signOut } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const hasRedirected = useRef(false);
 
   console.log("[AdminLayout] state:", { isLoading, userEmail: user?.email, pathname });
 
-  // If no user after auth resolves, redirect to login
+  // If no user after auth resolves, redirect to login (only once)
   useEffect(() => {
+    if (hasRedirected.current) return;
     if (!isLoading && !user && pathname !== "/admin/login") {
       console.log("[AdminLayout] No user, redirecting to /admin/login");
+      hasRedirected.current = true;
       router.push("/admin/login");
     }
   }, [isLoading, user, pathname, router]);
