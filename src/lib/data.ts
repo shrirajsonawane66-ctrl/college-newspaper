@@ -6,6 +6,7 @@ export interface Article {
   category: string;
   categorySlug: string;
   imageUrl: string;
+  thumbnailUrl: string;
   author: string;
   authorRole: string;
   publishedAt: string;
@@ -37,6 +38,7 @@ export const categories: Category[] = [
   { name: "Announcements", slug: "announcements", count: 2 },
   { name: "Events", slug: "events", count: 2 },
   { name: "Publicity", slug: "publicity", count: 2 },
+  { name: "Meme", slug: "meme", count: 2 },
 ];
 
 export const articles: Article[] = [
@@ -53,6 +55,7 @@ export const articles: Article[] = [
     category: "Announcements",
     categorySlug: "announcements",
     imageUrl: "/images/wccbm-logo.png",
+    thumbnailUrl: "",
     author: "WCCBM Times Desk",
     authorRole: "Editorial Board",
     publishedAt: "2026-05-27",
@@ -73,6 +76,7 @@ export const articles: Article[] = [
     category: "Campus News",
     categorySlug: "campus-news",
     imageUrl: "/images/wccbm-logo.png",
+    thumbnailUrl: "",
     author: "Shriraj Sonawane",
     authorRole: "Student Correspondent",
     publishedAt: "2026-05-25",
@@ -93,6 +97,7 @@ export const articles: Article[] = [
     category: "Achievements",
     categorySlug: "publicity",
     imageUrl: "/images/wccbm-logo.png",
+    thumbnailUrl: "",
     author: "WCCBM Times Desk",
     authorRole: "Editorial Board",
     publishedAt: "2026-05-22",
@@ -113,6 +118,7 @@ export const articles: Article[] = [
     category: "Events",
     categorySlug: "events",
     imageUrl: "/images/wccbm-logo.png",
+    thumbnailUrl: "",
     author: "WCCBM Times Desk",
     authorRole: "Events Coverage",
     publishedAt: "2026-05-20",
@@ -133,6 +139,7 @@ export const articles: Article[] = [
     category: "Achievements",
     categorySlug: "publicity",
     imageUrl: "/images/wccbm-logo.png",
+    thumbnailUrl: "",
     author: "Shriraj Sonawane",
     authorRole: "Student Correspondent",
     publishedAt: "2026-05-18",
@@ -141,6 +148,46 @@ export const articles: Article[] = [
     trending: false,
     editorPick: false,
     readTime: "2 min read",
+  },
+  {
+    id: "6",
+    title: "POV: You Realize Tomorrow Is the Deadline for That Assignment You Haven't Started",
+    summary: "A highly relatable moment captured in the halls of WCCBM as students face the universal struggle of academic procrastination.",
+    content: `<p>It's 11:59 PM. You've got 600 words to write. Your brain? Empty. Your WhatsApp? 47 messages in the class group, all asking the same question: "Kya karna hai?"</p>
+<p>This is the WCCBM student experience — a delicate balance between "I'll do it later" and "later is now." The struggle is real, the memes are relatable, and somehow, we all make it through. Barely.</p>
+<p>If this isn't you, you're either lying or you're that one student who actually finishes assignments a week early. We don't trust you.</p>`,
+    category: "Meme",
+    categorySlug: "meme",
+    imageUrl: "/images/wccbm-logo.png",
+    thumbnailUrl: "",
+    author: "WCCBM Meme Bureau",
+    authorRole: "Chief Meme Officer",
+    publishedAt: "2026-05-27",
+    isPublished: true,
+    featured: false,
+    trending: true,
+    editorPick: false,
+    readTime: "1 min read",
+  },
+  {
+    id: "7",
+    title: "The Canteen Samosa vs. The Exam Stress — Who Wins?",
+    summary: "An investigative deep dive into the only thing keeping WCCBM students sane during exam season.",
+    content: `<p>Let's be honest — the real MVP of exam season at WCCBM isn't the library. It's the canteen samosa. Spicy, crispy, and exactly ₹10. It has seen more late-night study sessions than most students.</p>
+<p>The canteen staff knows your order by heart. "Same wala?" they ask, and you nod, because yes — same wala. The samosa doesn't judge your last-minute preparation. It just exists. Perfectly. For you.</p>
+<p>This is a tribute to the unsung hero of WCCBM. The samosa. May your oil be hot and your chutney green everywhere.</p>`,
+    category: "Meme",
+    categorySlug: "meme",
+    imageUrl: "/images/wccbm-logo.png",
+    thumbnailUrl: "",
+    author: "Shriraj Sonawane",
+    authorRole: "Student Correspondent",
+    publishedAt: "2026-05-26",
+    isPublished: true,
+    featured: false,
+    trending: true,
+    editorPick: false,
+    readTime: "1 min read",
   },
 ];
 

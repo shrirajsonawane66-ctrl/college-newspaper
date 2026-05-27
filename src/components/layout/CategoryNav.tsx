@@ -2,10 +2,18 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { categories } from "@/lib/data";
+import { useState, useEffect } from "react";
+import { fetchCategories, type CategoryItem } from "@/lib/categories";
 
 export default function CategoryNav() {
   const pathname = usePathname();
+  const [cats, setCats] = useState<CategoryItem[]>([]);
+
+  useEffect(() => {
+    fetchCategories().then(setCats);
+  }, []);
+
+  const visibleCats = cats.filter((c) => c.visible);
 
   return (
     <div className="border-b border-border bg-paper-dark/30">
@@ -19,7 +27,7 @@ export default function CategoryNav() {
           >
             Home
           </Link>
-          {categories.map((cat) => (
+          {visibleCats.map((cat) => (
             <Link
               key={cat.slug}
               href={`/category/${cat.slug}`}

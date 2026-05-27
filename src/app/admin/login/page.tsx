@@ -107,6 +107,28 @@ export default function AdminLogin() {
       }
 
       console.log("Login success. Session user:", data.session.user.email);
+
+      // Ensure profile exists for this user
+      try {
+        const { data: existing } = await supabase
+          .from("profiles")
+          .select("id")
+          .eq("id", data.session.user.id)
+          .single();
+
+        if (!existing) {
+          await supabase.from("profiles").insert({
+            id: data.session.user.id,
+            email: data.session.user.email || "",
+            name: data.session.user.email?.split("@")[0] || "User",
+            role: "admin",
+          });
+          console.log("[Login] Profile created for user");
+        }
+      } catch {
+        console.warn("[Login] Could not check/create profile");
+      }
+
       router.push("/admin/dashboard");
     } catch (err: any) {
       console.error("Login failure (exception):", err);
@@ -210,7 +232,7 @@ export default function AdminLogin() {
                 <div className="flex items-center justify-center gap-2 my-2.5">
                   <div className="h-px w-8 bg-gradient-to-r from-transparent to-[#B08A4A]/30" />
                   <span className="text-[8px] tracking-[0.3em] text-[#B08A4A]/60 font-serif font-semibold uppercase">
-                    Est. 1965
+                    Est. 2026
                   </span>
                   <div className="h-px w-8 bg-gradient-to-r from-[#B08A4A]/30 to-transparent" />
                 </div>

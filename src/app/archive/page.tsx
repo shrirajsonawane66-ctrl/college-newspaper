@@ -1,14 +1,31 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight, Search } from "lucide-react";
 import BreakingNews from "@/components/layout/BreakingNews";
 import Navbar from "@/components/layout/Navbar";
 import Masthead from "@/components/layout/Masthead";
 import CategoryNav from "@/components/layout/CategoryNav";
 import Footer from "@/components/layout/Footer";
-import { articles } from "@/lib/data";
+import { supabase } from "@/lib/supabase";
+import type { Article } from "@/lib/data";
 import ArticleCard from "@/components/ui/ArticleCard";
+
+interface ArticleRow {
+  id: string;
+  title: string;
+  summary: string;
+  content: string;
+  category: string;
+  category_slug: string;
+  author: string;
+  author_role: string;
+  image_url: string;
+  thumbnail_url: string;
+  published_at: string;
+  is_published: boolean;
+  read_time: string;
+}
 
 const WEEKDAYS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
 const MONTHS = ["January", "February", "March", "April", "May", "June",
@@ -19,13 +36,45 @@ export default function ArchivePage() {
   const [month, setMonth] = useState(now.getMonth());
   const [year, setYear] = useState(now.getFullYear());
   const [searchQuery, setSearchQuery] = useState("");
+  const [allArticles, setAllArticles] = useState<Article[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    supabase
+      .from("articles")
+      .select("*")
+      .eq("is_published", true)
+      .order("created_at", { ascending: false })
+      .then(({ data }) => {
+        const mapped: Article[] = (data || []).map((row: ArticleRow) => ({
+          id: row.id,
+          title: row.title,
+          summary: row.summary,
+          content: row.content,
+          category: row.category,
+          categorySlug: row.category_slug,
+          imageUrl: row.image_url,
+          thumbnailUrl: row.thumbnail_url || "",
+          author: row.author,
+          authorRole: row.author_role,
+          publishedAt: row.published_at,
+          isPublished: row.is_published,
+          featured: false,
+          trending: false,
+          editorPick: false,
+          readTime: row.read_time,
+        }));
+        setAllArticles(mapped);
+        setLoading(false);
+      });
+  }, []);
 
   const firstDay = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
   const padding = Array.from({ length: firstDay }, (_, i) => null);
 
-  const filtered = articles.filter((a) => {
+  const filtered = allArticles.filter((a) => {
     const d = new Date(a.publishedAt);
     const matchesDate = d.getMonth() === month && d.getFullYear() === year;
     const matchesSearch = !searchQuery ||
@@ -90,7 +139,7 @@ export default function ArchivePage() {
                 ))}
                 {padding.map((_, i) => <div key={`pad-${i}`} className="py-1" />)}
                 {days.map((d) => {
-                  const hasArticle = articles.some((a) => {
+                  const hasArticle = allArticles.some((a) => {
                     const ad = new Date(a.publishedAt);
                     return ad.getDate() === d && ad.getMonth() === month && ad.getFullYear() === year;
                   });
@@ -107,7 +156,11 @@ export default function ArchivePage() {
           </div>
 
           <div className="lg:col-span-3">
-            {filtered.length > 0 ? (
+            {loading ? (
+              <div className="text-center py-16">
+                <div className="inline-block w-5 h-5 border border-ink/20 border-t-ink rounded-full animate-spin" />
+              </div>
+            ) : filtered.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
                 {filtered.map((article) => (
                   <ArticleCard key={article.id} article={article} />

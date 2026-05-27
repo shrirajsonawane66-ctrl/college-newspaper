@@ -9,7 +9,6 @@ import Navbar from "@/components/layout/Navbar";
 import CategoryNav from "@/components/layout/CategoryNav";
 import Footer from "@/components/layout/Footer";
 import NewspaperFoldSection from "@/components/ui/NewspaperFoldSection";
-import { articles } from "@/lib/data";
 import { supabase } from "@/lib/supabase";
 import { getArticleThumbnail } from "@/lib/thumbnails";
 import CategoryBadge from "@/components/ui/CategoryBadge";
@@ -18,7 +17,26 @@ import CommentForm from "@/components/ui/CommentForm";
 import RelatedArticles from "@/components/ui/RelatedArticles";
 import SidebarWidget from "@/components/ui/SidebarWidget";
 import TrendingSidebar from "@/components/sections/TrendingSidebar";
-import type { Comment } from "@/lib/data";
+import type { Article, Comment } from "@/lib/data";
+
+interface ArticleRow {
+  id: string;
+  title: string;
+  summary: string;
+  content: string;
+  category: string;
+  category_slug: string;
+  author: string;
+  author_role: string;
+  image_url: string;
+  thumbnail_url: string;
+  published_at: string;
+  is_published: boolean;
+  featured: boolean;
+  trending: boolean;
+  editor_pick: boolean;
+  read_time: string;
+}
 
 interface CommentRow {
   id: string;
@@ -31,8 +49,65 @@ interface CommentRow {
 
 export default function ArticlePage() {
   const params = useParams();
-  const article = articles.find((a) => a.id === params.id);
+  const [article, setArticle] = useState<Article | null>(null);
+  const [allArticles, setAllArticles] = useState<Article[]>([]);
   const [commentsList, setCommentsList] = useState<Comment[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!params.id) return;
+    setLoading(true);
+
+    Promise.all([
+      supabase.from("articles").select("*").eq("id", params.id).single(),
+      supabase.from("articles").select("*").eq("is_published", true).order("created_at", { ascending: false }),
+    ]).then(([articleRes, allRes]) => {
+      if (articleRes.data && !articleRes.error) {
+        const row = articleRes.data as ArticleRow;
+        setArticle({
+          id: row.id,
+          title: row.title,
+          summary: row.summary,
+          content: row.content,
+          category: row.category,
+          categorySlug: row.category_slug,
+          imageUrl: row.image_url,
+          thumbnailUrl: row.thumbnail_url || "",
+          author: row.author,
+          authorRole: row.author_role,
+          publishedAt: row.published_at,
+          isPublished: row.is_published,
+          featured: row.featured || false,
+          trending: row.trending || false,
+          editorPick: row.editor_pick || false,
+          readTime: row.read_time,
+        });
+        console.log('[ArticlePage] Fetched article:', { id: row.id, thumbnailUrl: row.thumbnail_url, imageUrl: row.image_url });
+      }
+      if (allRes.data && !allRes.error) {
+        const mapped: Article[] = (allRes.data as ArticleRow[]).map((row) => ({
+          id: row.id,
+          title: row.title,
+          summary: row.summary,
+          content: row.content,
+          category: row.category,
+          categorySlug: row.category_slug,
+          imageUrl: row.image_url,
+          thumbnailUrl: row.thumbnail_url || "",
+          author: row.author,
+          authorRole: row.author_role,
+          publishedAt: row.published_at,
+          isPublished: row.is_published,
+          featured: row.featured || false,
+          trending: row.trending || false,
+          editorPick: row.editor_pick || false,
+          readTime: row.read_time,
+        }));
+        setAllArticles(mapped);
+      }
+      setLoading(false);
+    });
+  }, [params.id]);
 
   const fetchComments = useCallback(async () => {
     if (!params.id) return;
@@ -43,7 +118,6 @@ export default function ArticlePage() {
       .order("created_at", { ascending: false });
 
     if (!error) {
-      console.log("Fetched comments:", data);
       const mapped: Comment[] = (data || []).map((row: CommentRow) => ({
         id: row.id,
         articleId: row.article_id,
@@ -54,14 +128,26 @@ export default function ArticlePage() {
         avatar: row.author_name?.charAt(0).toUpperCase() || "?",
       }));
       setCommentsList(mapped);
-    } else {
-      console.error("Fetch comments error:", error);
     }
   }, [params.id]);
 
   useEffect(() => {
     fetchComments();
   }, [fetchComments]);
+
+  if (loading) {
+    return (
+      <>
+        <BreakingNews />
+        <Navbar />
+        <CategoryNav />
+        <main className="newspaper-container py-16 text-center">
+          <div className="inline-block w-5 h-5 border border-ink/20 border-t-ink rounded-full animate-spin" />
+        </main>
+        <Footer />
+      </>
+    );
+  }
 
   if (!article) {
     return (
@@ -100,7 +186,7 @@ export default function ArticlePage() {
 
                 <div className="mt-3 flex items-center gap-2">
                   <CategoryBadge category={article.category} slug={article.categorySlug} size="lg" />
-                  <span className="vintage-stamp">Est. 1965</span>
+                  <span className="vintage-stamp">Est. 2026</span>
                 </div>
 
                 <h1 className="mt-4 font-serif font-black text-ink text-3xl sm:text-4xl md:text-5xl lg:text-6xl leading-[1.0] tracking-[-0.01em]">
@@ -119,7 +205,7 @@ export default function ArticlePage() {
                   <div className="aspect-[16/9] bg-paper-dark border-2 border-border relative overflow-hidden aged-edge">
                     <div
                       className="absolute inset-0 bg-cover bg-center transition-all duration-700 hover:scale-105"
-                      style={{ backgroundImage: `url(${getArticleThumbnail(article.id)})` }}
+                      style={{ backgroundImage: `url(${article.thumbnailUrl || article.imageUrl || getArticleThumbnail(article.id)})` }}
                     />
                     <div className="absolute bottom-0 left-0 right-0 bg-paper/85 backdrop-blur-sm py-2 px-4 text-[10px] text-ink-faded uppercase tracking-[0.15em] font-body text-right border-t border-border">
                       WCCBM TIMELINE &mdash; Illustration
@@ -151,21 +237,13 @@ export default function ArticlePage() {
                         No comments yet. Be the first to share your thoughts.
                       </p>
                     )}
-                    {process.env.NODE_ENV === "development" && (
-                      <details className="mt-2">
-                        <summary className="text-[10px] text-ink-faded cursor-pointer font-mono">Debug: comments state</summary>
-                        <pre className="text-[10px] text-ink-faded font-mono mt-1 bg-paper-dark p-2 overflow-x-auto">
-                          {JSON.stringify(commentsList, null, 2)}
-                        </pre>
-                      </details>
-                    )}
                   </div>
                 </div>
               </motion.div>
             </article>
 
             <aside className="space-y-6 border-l border-border pl-6">
-              <TrendingSidebar articles={articles} />
+              <TrendingSidebar articles={allArticles} />
               <SidebarWidget title="Details">
                 <div className="space-y-2 text-sm font-body">
                   <div className="flex justify-between py-1.5 border-b border-border">
@@ -191,7 +269,7 @@ export default function ArticlePage() {
 
           <div className="mt-12 border-t border-border pt-8">
             <NewspaperFoldSection foldIntensity={0.6}>
-              <RelatedArticles currentId={article.id} category={article.category} articles={articles} />
+              <RelatedArticles currentId={article.id} category={article.category} articles={allArticles} />
             </NewspaperFoldSection>
           </div>
         </div>

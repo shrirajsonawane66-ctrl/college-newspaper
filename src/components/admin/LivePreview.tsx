@@ -12,6 +12,7 @@ interface PreviewData {
   author: string;
   authorRole: string;
   imageUrl: string;
+  thumbnailUrl?: string;
   publishedAt: string;
   readTime: string;
 }
@@ -23,7 +24,7 @@ export default function LivePreview({
   data: PreviewData;
   articleId: string;
 }) {
-  const imageUrl = data.imageUrl || getArticleThumbnail(articleId);
+  const imageUrl = data.thumbnailUrl || data.imageUrl || getArticleThumbnail(articleId);
   const wordCount = data.content ? data.content.split(/\s+/).filter(Boolean).length : 0;
   const charCount = data.content ? data.content.length : 0;
 

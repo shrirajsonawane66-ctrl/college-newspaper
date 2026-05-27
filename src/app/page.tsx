@@ -27,8 +27,12 @@ interface ArticleRow {
   author: string;
   author_role: string;
   image_url: string;
+  thumbnail_url: string;
   published_at: string;
   is_published: boolean;
+  featured: boolean;
+  trending: boolean;
+  editor_pick: boolean;
   read_time: string;
 }
 
@@ -39,7 +43,6 @@ export default function Home() {
 
   useEffect(() => {
     async function fetchArticles() {
-      console.log("Homepage: fetching published articles from Supabase...");
       const { data, error: fetchError } = await supabase
         .from("articles")
         .select("*")
@@ -47,7 +50,6 @@ export default function Home() {
         .order("created_at", { ascending: false });
 
       if (fetchError) {
-        console.error("Homepage fetch error:", fetchError);
         setError("Failed to load articles.");
         setLoading(false);
         return;
@@ -61,17 +63,17 @@ export default function Home() {
         category: row.category,
         categorySlug: row.category_slug,
         imageUrl: row.image_url,
+        thumbnailUrl: row.thumbnail_url || "",
         author: row.author,
         authorRole: row.author_role,
         publishedAt: row.published_at,
         isPublished: row.is_published,
-        featured: false,
-        trending: false,
-        editorPick: false,
+        featured: row.featured || false,
+        trending: row.trending || false,
+        editorPick: row.editor_pick || false,
         readTime: row.read_time,
       }));
 
-      console.log(`Homepage: fetched ${mapped.length} published articles.`);
       setArticlesList(mapped);
       setLoading(false);
     }

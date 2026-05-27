@@ -6,6 +6,10 @@ import type { Article } from "@/lib/data";
 import CategoryBadge from "./CategoryBadge";
 import { getArticleThumbnail } from "@/lib/thumbnails";
 
+function getThumbnailSrc(article: Article): string {
+  return article.thumbnailUrl || article.imageUrl || getArticleThumbnail(article.id);
+}
+
 export default function FeaturedHeadline({
   article,
 }: {
@@ -20,7 +24,7 @@ export default function FeaturedHeadline({
       <Link href={`/article/${article.id}`} className="group block">
         <div className="bg-paper-dark border-2 border-ink/15 p-4 sm:p-6 md:p-8 relative overflow-hidden transition-all duration-700 hover:border-gold/30 hover:shadow-xl animate-gold-sweep aged-edge">
           <div className="absolute inset-0 opacity-[0.15] bg-cover bg-center pointer-events-none transition-all duration-700 group-hover:scale-105 group-hover:opacity-[0.2]"
-            style={{ backgroundImage: `url(${getArticleThumbnail(article.id)})` }}
+            style={{ backgroundImage: `url(${getThumbnailSrc(article)})` }}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-paper-dark/60 via-transparent to-transparent pointer-events-none" />
           <div className="relative z-10">

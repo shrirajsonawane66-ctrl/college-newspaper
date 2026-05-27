@@ -2,20 +2,26 @@
 
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import SearchBar from "./SearchBar";
-import CalendarWidget from "./CalendarWidget";
-import { categories } from "@/lib/data";
+import { fetchCategories, type CategoryItem } from "@/lib/categories";
 
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [cats, setCats] = useState<CategoryItem[]>([]);
+
+  useEffect(() => {
+    fetchCategories().then(setCats);
+  }, []);
+
+  const visibleCats = cats.filter((c) => c.visible);
 
   return (
     <header className="sticky top-0 z-50 bg-paper/98 border-b border-border border-glow-bottom">
       <div className="newspaper-container">
         <div className="flex items-center justify-between h-12">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
               className="lg:hidden p-2 -ml-2 text-ink-lighter hover:text-ink flex items-center justify-center"
@@ -29,6 +35,13 @@ export default function Navbar() {
             >
               WCCBM Timeline
             </Link>
+            <span className="hidden sm:inline w-px h-3 bg-border/60" />
+            <Link
+              href="/admin/login"
+              className="hidden sm:flex items-center justify-center text-[10px] uppercase tracking-[0.2em] font-body font-semibold text-ink-lighter hover:text-ink leading-none"
+            >
+              Admin
+            </Link>
           </div>
 
           <nav className="hidden lg:flex items-center justify-center h-full gap-1">
@@ -38,7 +51,7 @@ export default function Navbar() {
             >
               Home
             </Link>
-            {categories.map((cat) => (
+            {visibleCats.map((cat) => (
               <Link
                 key={cat.slug}
                 href={`/category/${cat.slug}`}
@@ -51,7 +64,7 @@ export default function Navbar() {
               href="/archive"
               className="flex items-center justify-center h-full px-4 text-xs uppercase tracking-[0.2em] text-ink-lighter hover:text-ink font-body font-semibold whitespace-nowrap border-b-2 border-transparent hover:border-sepia/40 transition-all duration-200"
             >
-              Meme
+              Archives
             </Link>
             <span className="w-px h-4 bg-border mx-2 shrink-0" />
             <Link
@@ -62,15 +75,8 @@ export default function Navbar() {
             </Link>
           </nav>
 
-          <div className="flex items-center justify-center gap-1">
-            <CalendarWidget />
+          <div className="flex items-center justify-center gap-2">
             <SearchBar />
-            <Link
-              href="/admin/login"
-              className="hidden sm:flex items-center justify-center gap-1 text-xs uppercase tracking-wider font-body font-semibold text-ink-lighter hover:text-ink px-2 h-8"
-            >
-              Admin
-            </Link>
           </div>
         </div>
       </div>
@@ -88,13 +94,13 @@ export default function Navbar() {
               <Link href="/" onClick={() => setMobileOpen(false)} className="block py-2 px-3 text-sm font-serif font-semibold text-ink hover:bg-paper-dark/50 rounded transition-colors">
                 Home
               </Link>
-              {categories.map((cat) => (
+              {visibleCats.map((cat) => (
                 <Link key={cat.slug} href={`/category/${cat.slug}`} onClick={() => setMobileOpen(false)} className="block py-2 px-3 text-sm font-serif text-ink-light hover:bg-paper-dark/50 rounded transition-colors">
                   {cat.name}
                 </Link>
               ))}
               <Link href="/archive" onClick={() => setMobileOpen(false)} className="block py-2 px-3 text-sm font-serif text-ink-light hover:bg-paper-dark/50 rounded transition-colors">
-                Meme
+                Archives
               </Link>
               <Link href="/about" onClick={() => setMobileOpen(false)} className="block py-2 px-3 text-sm font-serif text-ink-light hover:bg-paper-dark/50 rounded transition-colors">
                 Founder

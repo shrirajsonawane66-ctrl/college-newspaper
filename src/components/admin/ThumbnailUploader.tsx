@@ -3,6 +3,7 @@
 import { useState, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Upload, Image, X, Link, CheckCircle } from "lucide-react";
+import { uploadArticleThumbnail } from "@/lib/supabase";
 
 export default function ThumbnailUploader({
   value,
@@ -29,33 +30,40 @@ export default function ThumbnailUploader({
     }
   }, []);
 
-  const simulateUpload = useCallback((file: File) => {
+  const uploadFile = useCallback(async (file: File) => {
     setUploading(true);
     setProgress(0);
 
-    const interval = setInterval(() => {
-      setProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          return 100;
-        }
-        return prev + Math.random() * 25 + 5;
-      });
-    }, 200);
+    try {
+      const fakeProgress = setInterval(() => {
+        setProgress((prev) => {
+          if (prev >= 90) {
+            clearInterval(fakeProgress);
+            return 90;
+          }
+          return prev + Math.random() * 15 + 5;
+        });
+      }, 300);
 
-    setTimeout(() => {
-      clearInterval(interval);
+      const publicUrl = await uploadArticleThumbnail(file);
+
+      clearInterval(fakeProgress);
       setProgress(100);
+      setPreview(publicUrl);
+      onChange(publicUrl);
+      setUrlInput(publicUrl);
 
-      const objectUrl = URL.createObjectURL(file);
-      setPreview(objectUrl);
-      onChange(objectUrl);
-      setUrlInput(objectUrl);
+      console.log('[ThumbnailUploader] Upload complete, URL:', publicUrl);
 
       setTimeout(() => {
         setUploading(false);
       }, 400);
-    }, 1500);
+    } catch (err: any) {
+      console.error('[ThumbnailUploader] Upload error:', err);
+      setUploading(false);
+      setProgress(0);
+      alert('Failed to upload image: ' + (err.message || 'Unknown error'));
+    }
   }, [onChange]);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
@@ -63,20 +71,22 @@ export default function ThumbnailUploader({
     e.stopPropagation();
     setDragActive(false);
     if (e.dataTransfer.files?.[0]) {
-      simulateUpload(e.dataTransfer.files[0]);
+      uploadFile(e.dataTransfer.files[0]);
     }
-  }, [simulateUpload]);
+  }, [uploadFile]);
 
   const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files?.[0]) {
-      simulateUpload(e.target.files[0]);
+      uploadFile(e.target.files[0]);
     }
-  }, [simulateUpload]);
+  }, [uploadFile]);
 
   const handleUrlSubmit = useCallback(() => {
     if (urlInput.trim()) {
-      setPreview(urlInput.trim());
-      onChange(urlInput.trim());
+      const url = urlInput.trim();
+      setPreview(url);
+      onChange(url);
+      console.log('[ThumbnailUploader] URL submitted:', url);
     }
   }, [urlInput, onChange]);
 

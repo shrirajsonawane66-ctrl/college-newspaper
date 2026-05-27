@@ -1,12 +1,12 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Save, CheckCircle, XCircle, Eye, EyeOff,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/hooks/useAuth";
 import StepIndicator from "@/components/admin/StepIndicator";
 import ThumbnailUploader from "@/components/admin/ThumbnailUploader";
 import LivePreview from "@/components/admin/LivePreview";
@@ -39,7 +39,7 @@ function slugify(s: string) {
 }
 
 export default function StudioPage() {
-  const router = useRouter();
+  const { isLoading: authLoading } = useAuth();
   const [step, setStep] = useState("details");
   const [form, setForm] = useState({ ...emptyForm });
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -47,7 +47,6 @@ export default function StudioPage() {
   const [autoSaveStatus, setAutoSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [notification, setNotification] = useState<{ type: "success" | "error"; message: string } | null>(null);
   const [publishModalOpen, setPublishModalOpen] = useState(false);
-  const [authChecking, setAuthChecking] = useState(true);
   const autoSaveTimer = useRef<NodeJS.Timeout | null>(null);
   const dirtyRef = useRef(false);
   const lastSavedRef = useRef("");
@@ -57,17 +56,9 @@ export default function StudioPage() {
     setTimeout(() => setNotification(null), 3500);
   }, []);
 
-  // Auth check
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) { router.push("/admin/login"); return; }
-      setAuthChecking(false);
-    });
-  }, [router]);
-
   // Load editing article from query param
   useEffect(() => {
-    if (authChecking) return;
+    if (authLoading) return;
     const params = new URLSearchParams(window.location.search);
     const editId = params.get("edit");
     if (editId) {
@@ -92,7 +83,7 @@ export default function StudioPage() {
         }
       });
     }
-  }, [authChecking]);
+  }, [authLoading]);
 
   // Track dirty state
   const formString = JSON.stringify(form);
@@ -148,7 +139,7 @@ export default function StudioPage() {
     };
   }, [form, editingId]);
 
-  if (authChecking) {
+  if (authLoading) {
     return (
       <div className="min-h-screen bg-paper flex items-center justify-center">
         <div className="flex items-center gap-2 text-ink-faded text-sm font-body">

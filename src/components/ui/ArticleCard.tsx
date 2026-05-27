@@ -6,6 +6,10 @@ import type { Article } from "@/lib/data";
 import CategoryBadge from "./CategoryBadge";
 import { getArticleThumbnail } from "@/lib/thumbnails";
 
+function getThumbnailSrc(article: Article): string {
+  return article.thumbnailUrl || article.imageUrl || getArticleThumbnail(article.id);
+}
+
 export default function ArticleCard({
   article,
   variant = "default",
@@ -24,7 +28,7 @@ export default function ArticleCard({
         <Link href={`/article/${article.id}`} className="group flex gap-3 items-start pb-3 border-b border-border last:border-b-0">
           <div
             className="w-20 h-20 shrink-0 border border-border overflow-hidden bg-cover bg-center transition-all duration-500 group-hover:border-gold-light group-hover:shadow-md"
-            style={{ backgroundImage: `url(${getArticleThumbnail(article.id)})` }}
+            style={{ backgroundImage: `url(${getThumbnailSrc(article)})` }}
           />
           <div className="flex-1 min-w-0">
             <CategoryBadge category={article.category} slug={article.categorySlug} plain />
@@ -49,13 +53,13 @@ export default function ArticleCard({
         <Link href={`/article/${article.id}`} className="group flex items-start gap-2.5 pb-2 border-b border-border last:border-b-0">
           <div
             className="w-10 h-10 shrink-0 border border-border bg-cover bg-center transition-all duration-500 group-hover:border-gold-light"
-            style={{ backgroundImage: `url(${getArticleThumbnail(article.id)})` }}
+            style={{ backgroundImage: `url(${getThumbnailSrc(article)})` }}
           />
           <div className="min-w-0">
             <h4 className="font-serif text-sm font-semibold text-ink group-hover:text-sepia transition-colors duration-300 leading-snug line-clamp-2">
               {article.title}
             </h4>
-            <span className="text-[10px] text-ink-faded">{article.publishedAt}</span>
+            <span className="text-[9px] text-ink-faded uppercase tracking-[0.1em] font-body">{article.category} &middot; {article.publishedAt}</span>
           </div>
         </Link>
       </motion.div>
@@ -73,7 +77,7 @@ export default function ArticleCard({
       <Link href={`/article/${article.id}`} className="group block">
         <div
           className="aspect-[16/9] border border-border mb-2.5 bg-cover bg-center transition-all duration-500 group-hover:border-gold-light group-hover:shadow-md"
-          style={{ backgroundImage: `url(${getArticleThumbnail(article.id)})` }}
+          style={{ backgroundImage: `url(${getThumbnailSrc(article)})` }}
         />
         <CategoryBadge category={article.category} slug={article.categorySlug} plain />
         <h3 className="mt-1 font-serif font-bold text-lg text-ink group-hover:text-sepia transition-colors duration-300 leading-snug">
