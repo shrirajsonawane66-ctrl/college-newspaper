@@ -29,13 +29,18 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   console.log("[AdminLayout] state:", { isLoading, userEmail: user?.email, pathname });
 
+  // Reset redirect guard when user returns (re-login)
+  useEffect(() => {
+    if (user) hasRedirected.current = false;
+  }, [user]);
+
   // If no user after auth resolves, redirect to login (only once)
   useEffect(() => {
     if (hasRedirected.current) return;
     if (!isLoading && !user && pathname !== "/admin/login") {
       console.log("[AdminLayout] No user, redirecting to /admin/login");
       hasRedirected.current = true;
-      router.push("/admin/login");
+      router.replace("/admin/login");
     }
   }, [isLoading, user, pathname, router]);
 
