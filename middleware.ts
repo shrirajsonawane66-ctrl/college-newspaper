@@ -12,11 +12,11 @@ export async function middleware(request: NextRequest) {
     pathname === '/favicon.ico' ||
     pathname.startsWith('/images/')
   ) {
-    console.log('[Middleware] Public route — allowing:', pathname)
+    console.log('[Middleware] Public route \u2014 allowing:', pathname)
     return NextResponse.next({ request })
   }
 
-  // Only check auth for /admin/* routes (except login which is handled above)
+  // Only check auth for /admin/* routes (login already handled above)
   if (!pathname.startsWith('/admin/')) {
     return NextResponse.next({ request })
   }
@@ -32,12 +32,9 @@ export async function middleware(request: NextRequest) {
           return request.cookies.getAll()
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
-          const response = NextResponse.next({ request })
           cookiesToSet.forEach(({ name, value, options }) =>
-            response.cookies.set(name, value, options)
+            request.cookies.set(name, value)
           )
-          return response
         },
       },
     }
@@ -45,7 +42,7 @@ export async function middleware(request: NextRequest) {
 
   const { data: { user }, error } = await supabase.auth.getUser()
 
-  console.log('[Middleware] Auth check:', { pathname, hasUser: !!user, error: error?.message })
+  console.log('[Middleware] Auth result:', { pathname, hasUser: !!user, error: error?.message })
 
   if (!user) {
     console.log('[Middleware] No user, redirecting to /admin/login')
