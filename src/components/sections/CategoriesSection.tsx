@@ -6,6 +6,8 @@ import { motion } from "framer-motion";
 import { fetchCategories, type CategoryItem } from "@/lib/categories";
 import { Newspaper, Megaphone, Calendar, Trophy, Smile, Folder } from "lucide-react";
 import type { Article } from "@/lib/data";
+import RedDot from "@/components/ui/RedDot";
+import { isArticleNew } from "@/hooks/useNewArticles";
 
 const iconMap: Record<string, React.ReactNode> = {
   "campus-news": <Newspaper className="w-4 h-4" />,
@@ -24,6 +26,9 @@ export default function CategoriesSection({ articles }: { articles: Article[] })
 
   const visibleCats = cats.filter((c) => c.visible);
 
+  const hasNewArticles = (slug: string) =>
+    articles.some((a) => a.categorySlug === slug && isArticleNew(a));
+
   return (
     <section>
       <div className="section-head mb-3">Categories</div>
@@ -31,6 +36,7 @@ export default function CategoriesSection({ articles }: { articles: Article[] })
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
         {visibleCats.map((cat, index) => {
           const count = articles.filter((a) => a.categorySlug === cat.slug).length;
+          const isNew = hasNewArticles(cat.slug);
           return (
             <motion.div
               key={cat.slug}
@@ -46,9 +52,10 @@ export default function CategoriesSection({ articles }: { articles: Article[] })
                 <span className="text-ink-faded group-hover:text-sepia transition-colors shrink-0">
                   {iconMap[cat.slug] || <Folder className="w-4 h-4" />}
                 </span>
-                <div className="min-w-0">
-                  <span className="block text-xs font-serif font-bold text-ink group-hover:text-sepia transition-colors truncate">
+                <div className="min-w-0 flex-1">
+                  <span className="flex items-center gap-1.5 text-xs font-serif font-bold text-ink group-hover:text-sepia transition-colors truncate">
                     {cat.name}
+                    {isNew && <RedDot />}
                   </span>
                   <span className="text-[10px] text-ink-faded">{count} article{count !== 1 ? "s" : ""}</span>
                 </div>

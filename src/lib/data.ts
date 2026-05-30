@@ -15,6 +15,7 @@ export interface Article {
   trending: boolean;
   editorPick: boolean;
   readTime: string;
+  isNew?: boolean;
 }
 
 export interface Comment {

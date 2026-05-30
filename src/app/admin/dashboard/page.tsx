@@ -34,6 +34,7 @@ interface ArticleRow {
   editor_pick: boolean;
   read_time: string;
   created_at: string;
+  is_new: boolean;
 }
 
 interface CommentRow {
@@ -512,14 +513,15 @@ export default function AdminDashboard() {
                     <th className="px-4 py-2.5 font-semibold text-ink text-xs uppercase tracking-wider hidden sm:table-cell font-body">Author</th>
                     <th className="px-4 py-2.5 font-semibold text-ink text-xs uppercase tracking-wider hidden md:table-cell font-body">Category</th>
                     <th className="px-4 py-2.5 font-semibold text-ink text-xs uppercase tracking-wider font-body">Status</th>
+                    <th className="px-4 py-2.5 font-semibold text-ink text-xs uppercase tracking-wider font-body">New</th>
                     <th className="px-4 py-2.5 font-semibold text-ink text-xs uppercase tracking-wider font-body">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {loading ? (
-                    <tr><td colSpan={5} className="px-4 py-8 text-center text-sm text-ink-faded font-body">Loading articles&hellip;</td></tr>
+                  {                    loading ? (
+                    <tr><td colSpan={6} className="px-4 py-8 text-center text-sm text-ink-faded font-body">Loading articles&hellip;</td></tr>
                   ) : filteredArticles.length === 0 ? (
-                    <tr><td colSpan={5} className="px-4 py-8 text-center text-sm text-ink-faded font-body">No articles found.</td></tr>
+                    <tr><td colSpan={6} className="px-4 py-8 text-center text-sm text-ink-faded font-body">No articles found.</td></tr>
                   ) : (
                     filteredArticles.map((article) => (
                       <tr key={article.id} className="border-b border-border hover:bg-paper-dark/50 transition-colors">
@@ -536,6 +538,21 @@ export default function AdminDashboard() {
                             }`}
                           >
                             {article.is_published ? <><Eye className="w-3 h-3" /> Published</> : <><EyeOff className="w-3 h-3" /> Draft</>}
+                          </button>
+                        </td>
+                        <td className="px-4 py-2.5">
+                          <button
+                            onClick={async () => {
+                              const { error } = await supabase.from("articles").update({ is_new: !article.is_new }).eq("id", article.id);
+                              if (error) showNotification("error", "Failed to update.");
+                              else { showNotification("success", `New badge ${article.is_new ? "removed" : "added"}.`); fetchArticles(); }
+                            }}
+                            className={`inline-flex items-center gap-1 text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 font-body transition-colors cursor-pointer ${
+                              article.is_new ? "bg-red-50 text-red-700 hover:bg-red-100" : "bg-paper-dark text-ink-faded hover:bg-paper-dark/80"
+                            }`}
+                          >
+                            <span className={`inline-block w-1.5 h-1.5 rounded-full ${article.is_new ? "bg-red-500 animate-red-dot" : "bg-transparent"}`} />
+                            {article.is_new ? "New" : "Old"}
                           </button>
                         </td>
                         <td className="px-4 py-2.5">

@@ -5,6 +5,8 @@ import { motion } from "framer-motion";
 import type { Article } from "@/lib/data";
 import CategoryBadge from "./CategoryBadge";
 import { getArticleThumbnail } from "@/lib/thumbnails";
+import NewLabel from "./NewLabel";
+import { isArticleNew } from "@/hooks/useNewArticles";
 
 function getThumbnailSrc(article: Article): string {
   return article.thumbnailUrl || article.imageUrl || getArticleThumbnail(article.id);
@@ -35,6 +37,7 @@ export default function ArticleCard({
             <h3 className="mt-0.5 font-serif font-semibold text-ink text-sm group-hover:text-sepia transition-colors duration-300 leading-snug line-clamp-2">
               {article.title}
             </h3>
+            {isArticleNew(article) && <NewLabel />}
             <div className="mt-0.5 byline">{article.author} &middot; {article.publishedAt}</div>
           </div>
         </Link>
@@ -56,9 +59,12 @@ export default function ArticleCard({
             style={{ backgroundImage: `url(${getThumbnailSrc(article)})` }}
           />
           <div className="min-w-0">
-            <h4 className="font-serif text-sm font-semibold text-ink group-hover:text-sepia transition-colors duration-300 leading-snug line-clamp-2">
-              {article.title}
-            </h4>
+            <div className="flex items-center gap-1.5">
+              <h4 className="font-serif text-sm font-semibold text-ink group-hover:text-sepia transition-colors duration-300 leading-snug line-clamp-2">
+                {article.title}
+              </h4>
+              {isArticleNew(article) && <NewLabel />}
+            </div>
             <span className="text-[9px] text-ink-faded uppercase tracking-[0.1em] font-body">{article.category} &middot; {article.publishedAt}</span>
           </div>
         </Link>
@@ -79,7 +85,10 @@ export default function ArticleCard({
           className="aspect-[16/9] border border-border mb-2.5 bg-cover bg-center transition-all duration-500 group-hover:border-gold-light group-hover:shadow-md"
           style={{ backgroundImage: `url(${getThumbnailSrc(article)})` }}
         />
-        <CategoryBadge category={article.category} slug={article.categorySlug} plain />
+        <div className="flex items-center gap-2">
+          <CategoryBadge category={article.category} slug={article.categorySlug} plain />
+          {isArticleNew(article) && <NewLabel />}
+        </div>
         <h3 className="mt-1 font-serif font-bold text-lg text-ink group-hover:text-sepia transition-colors duration-300 leading-snug">
           {article.title}
         </h3>

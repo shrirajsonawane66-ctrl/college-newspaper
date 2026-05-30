@@ -58,6 +58,10 @@ CREATE POLICY "Allow authenticated update" ON contact_messages
 CREATE POLICY "Allow authenticated delete" ON contact_messages
   FOR DELETE USING (auth.role() = 'authenticated');
 
+-- Add notification columns to articles
+ALTER TABLE articles ADD COLUMN IF NOT EXISTS is_new BOOLEAN DEFAULT true;
+ALTER TABLE articles ADD COLUMN IF NOT EXISTS published_at TIMESTAMPTZ DEFAULT now();
+
 -- Profiles table for role-based access control
 CREATE TABLE IF NOT EXISTS profiles (
   id UUID REFERENCES auth.users(id) ON DELETE CASCADE PRIMARY KEY,

@@ -33,6 +33,7 @@ interface ArticleRow {
   trending: boolean;
   editor_pick: boolean;
   read_time: string;
+  is_new: boolean;
 }
 
 export default function CategoryPage() {
@@ -78,6 +79,7 @@ export default function CategoryPage() {
           trending: row.trending || false,
           editorPick: row.editor_pick || false,
           readTime: row.read_time,
+          isNew: row.is_new,
         }));
         setArticleList(mapped);
         setLoading(false);

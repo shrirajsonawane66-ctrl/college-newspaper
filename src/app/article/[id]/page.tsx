@@ -36,6 +36,7 @@ interface ArticleRow {
   trending: boolean;
   editor_pick: boolean;
   read_time: string;
+  is_new: boolean;
 }
 
 interface CommentRow {
@@ -81,6 +82,7 @@ export default function ArticlePage() {
           trending: row.trending || false,
           editorPick: row.editor_pick || false,
           readTime: row.read_time,
+          isNew: row.is_new,
         });
         console.log('[ArticlePage] Fetched article:', { id: row.id, thumbnailUrl: row.thumbnail_url, imageUrl: row.image_url });
       }
@@ -102,6 +104,7 @@ export default function ArticlePage() {
           trending: row.trending || false,
           editorPick: row.editor_pick || false,
           readTime: row.read_time,
+          isNew: row.is_new,
         }));
         setAllArticles(mapped);
       }

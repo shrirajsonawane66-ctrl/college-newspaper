@@ -113,8 +113,9 @@ export default function StudioPage() {
         featured: form.featured,
         trending: form.trending,
         editor_pick: form.editor_pick,
-        published_at: new Date().toISOString().split("T")[0],
+        published_at: new Date().toISOString(),
         is_published: false,
+        is_new: false,
         read_time: calcReadTime(form.content),
       };
 
@@ -170,8 +171,9 @@ export default function StudioPage() {
       featured: form.featured,
       trending: form.trending,
       editor_pick: form.editor_pick,
-      published_at: new Date().toISOString().split("T")[0],
+      published_at: new Date().toISOString(),
       is_published: isPublished,
+      is_new: isPublished,
       read_time: calcReadTime(form.content),
     };
 

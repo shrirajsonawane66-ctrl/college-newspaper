@@ -3,12 +3,29 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { fetchCategories, type CategoryItem } from "@/lib/categories";
+import { supabase } from "@/lib/supabase";
+import RedDot from "@/components/ui/RedDot";
 
 export default function Footer() {
   const [cats, setCats] = useState<CategoryItem[]>([]);
+  const [newCategories, setNewCategories] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     fetchCategories().then(setCats);
+  }, []);
+
+  useEffect(() => {
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    supabase
+      .from("articles")
+      .select("category_slug")
+      .or(`is_new.eq.true,published_at.gte.${twentyFourHoursAgo}`)
+      .then(({ data }) => {
+        if (data) {
+          const slugs = new Set(data.map((r: { category_slug: string }) => r.category_slug));
+          setNewCategories(slugs);
+        }
+      });
   }, []);
 
   const visibleCats = cats.filter((c) => c.visible);
@@ -35,8 +52,9 @@ export default function Footer() {
             <ul className="space-y-1.5">
               {visibleCats.map((cat) => (
                 <li key={cat.slug}>
-                  <Link href={`/category/${cat.slug}`} className="text-sm text-ink-faded/70 hover:text-paper transition-colors font-body">
+                  <Link href={`/category/${cat.slug}`} className="inline-flex items-center gap-1.5 text-sm text-ink-faded/70 hover:text-paper transition-colors font-body">
                     {cat.name}
+                    {newCategories.has(cat.slug) && <RedDot />}
                   </Link>
                 </li>
               ))}

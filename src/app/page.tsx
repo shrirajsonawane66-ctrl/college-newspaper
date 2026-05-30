@@ -34,6 +34,7 @@ interface ArticleRow {
   trending: boolean;
   editor_pick: boolean;
   read_time: string;
+  is_new: boolean;
 }
 
 export default function Home() {
@@ -72,6 +73,7 @@ export default function Home() {
         trending: row.trending || false,
         editorPick: row.editor_pick || false,
         readTime: row.read_time,
+        isNew: row.is_new,
       }));
 
       setArticlesList(mapped);
