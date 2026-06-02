@@ -30,7 +30,7 @@ function LiveCalendar({ plain }: CalendarWidgetProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
-    const timer = setInterval(() => setNow(new Date()), 1000);
+    const timer = setInterval(() => setNow(new Date()), 30000);
     return () => clearInterval(timer);
   }, []);
 

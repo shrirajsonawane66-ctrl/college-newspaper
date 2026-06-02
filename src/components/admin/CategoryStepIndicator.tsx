@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+
 
 interface Step {
   id: string;
@@ -53,23 +53,15 @@ export default function CategoryStepIndicator({
             >
               <div className="relative flex items-center justify-center w-6 h-6 mt-0.5 shrink-0">
                 {isPast ? (
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    className="w-full h-full rounded-full bg-gold/80 flex items-center justify-center"
-                  >
+                  <div className="w-full h-full rounded-full bg-gold/80 flex items-center justify-center">
                     <svg className="w-3 h-3 text-ink" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                     </svg>
-                  </motion.div>
+                  </div>
                 ) : isActive ? (
-                  <motion.div
-                    initial={{ scale: 0.8 }}
-                    animate={{ scale: 1 }}
-                    className="w-full h-full rounded-full border-2 border-gold flex items-center justify-center"
-                  >
+                  <div className="w-full h-full rounded-full border-2 border-gold flex items-center justify-center">
                     <span className="text-[10px] font-bold text-gold font-body">{i + 1}</span>
-                  </motion.div>
+                  </div>
                 ) : (
                   <div className="w-full h-full rounded-full border border-zinc-700 flex items-center justify-center">
                     <span className="text-[10px] font-bold text-zinc-600 font-body">{i + 1}</span>

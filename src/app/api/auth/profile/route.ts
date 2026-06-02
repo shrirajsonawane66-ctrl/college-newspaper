@@ -53,7 +53,7 @@ export async function POST(request: Request) {
       id: user.id,
       email: user.email || "",
       name,
-      role: "admin",
+      role: "user",
     })
     .select()
     .single();

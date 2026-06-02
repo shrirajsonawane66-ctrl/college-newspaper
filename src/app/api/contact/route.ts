@@ -9,12 +9,10 @@ function getSupabaseClient() {
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    console.log("[Contact API] POST received body:", JSON.stringify(body));
 
     const { name, email, subject, message } = body;
 
     if (!name || !email || !message) {
-      console.error("[Contact API] Missing required fields:", { name, email, subject, message });
       return Response.json(
         { error: "Missing required fields" },
         { status: 400 }
@@ -22,7 +20,6 @@ export async function POST(req: Request) {
     }
 
     const supabase = getSupabaseClient();
-    console.log("[Contact API] Supabase client created, inserting...");
 
     const { data, error } = await supabase
       .from("contact_messages")
@@ -36,20 +33,16 @@ export async function POST(req: Request) {
       ]);
 
     if (error) {
-      console.error("[Contact API] Supabase insert error:", JSON.stringify(error));
       return Response.json(
         { error: error.message },
         { status: 500 }
       );
     }
-
-    console.log("[Contact API] Insert success:", JSON.stringify(data));
     return Response.json(
       { success: true },
       { status: 200 }
     );
-  } catch (err) {
-    console.error("[Contact API] Unhandled error:", err);
+  } catch {
     return Response.json(
       { error: "Internal server error" },
       { status: 500 }
@@ -81,7 +74,6 @@ export async function GET(req: Request) {
     const { data: messages, error: fetchError } = await query;
 
     if (fetchError) {
-      console.error("[Contact API] Fetch error:", JSON.stringify(fetchError));
       return Response.json({ error: "Failed to fetch messages" }, { status: 500 });
     }
 
@@ -90,10 +82,8 @@ export async function GET(req: Request) {
       .select("*", { count: "exact", head: true })
       .eq("status", "unread");
 
-    console.log("[Contact API] Fetched messages:", messages?.length || 0, "unread:", unreadCount || 0);
     return Response.json({ messages, unreadCount }, { status: 200 });
-  } catch (err) {
-    console.error("[Contact API] GET error:", err);
+  } catch {
     return Response.json({ error: "Internal server error" }, { status: 500 });
   }
 }

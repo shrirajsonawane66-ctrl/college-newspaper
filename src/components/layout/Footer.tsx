@@ -35,21 +35,21 @@ export default function Footer() {
       <div className="newspaper-container py-10">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           <div>
-            <h3 className="font-serif text-xl font-bold tracking-[0.05em] text-paper mb-1">
+            <h3 className="font-serif text-2xl font-bold tracking-[0.05em] text-paper mb-1">
               WCCBM
             </h3>
-            <h4 className="font-serif text-xs tracking-[0.25em] text-ink-faded/60 mb-3">
+            <h4 className="font-serif text-sm tracking-[0.3em] text-ink-faded/60 mb-3 font-light">
               T I M E L I N E
             </h4>
-            <p className="text-sm leading-relaxed text-ink-faded/70 font-body">
+            <p className="text-sm leading-relaxed text-ink-faded/75 font-body">
               The official student newspaper of WCCBM. Bringing you campus news,
               announcements, achievements, and stories since 2026.
             </p>
           </div>
 
           <div>
-            <h4 className="byline text-paper/60 mb-3">Sections</h4>
-            <ul className="space-y-1.5">
+            <h4 className="font-sans text-xs uppercase tracking-[0.18em] text-paper/60 mb-3 font-semibold">Sections</h4>
+            <ul className="space-y-2">
               {visibleCats.map((cat) => (
                 <li key={cat.slug}>
                   <Link href={`/category/${cat.slug}`} className="inline-flex items-center gap-1.5 text-sm text-ink-faded/70 hover:text-paper transition-colors font-body">
@@ -62,8 +62,8 @@ export default function Footer() {
           </div>
 
           <div>
-            <h4 className="byline text-paper/60 mb-3">Quick Links</h4>
-            <ul className="space-y-1.5">
+            <h4 className="font-sans text-xs uppercase tracking-[0.18em] text-paper/60 mb-3 font-semibold">Quick Links</h4>
+            <ul className="space-y-2">
               {[
                 { label: "Founder", href: "/about" },
                 { label: "Contact", href: "/contact" },
@@ -80,8 +80,8 @@ export default function Footer() {
           </div>
 
           <div>
-            <h4 className="byline text-paper/60 mb-3">Contact</h4>
-            <ul className="space-y-1.5 text-sm text-ink-faded/70 font-body">
+            <h4 className="font-sans text-xs uppercase tracking-[0.18em] text-paper/60 mb-3 font-semibold">Contact</h4>
+            <ul className="space-y-2 text-sm text-ink-faded/75 font-body">
               <li>WCCBM Campus, College Road, Nashik</li>
               <li>
                 <a href="mailto:timeline@wccbm.edu.in" className="hover:text-paper transition-colors">

@@ -2,12 +2,12 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import type { Article } from "@/lib/data";
+import { getArticleImage, type Article } from "@/lib/data";
 import CategoryBadge from "./CategoryBadge";
 import { getArticleThumbnail } from "@/lib/thumbnails";
 
 function getThumbnailSrc(article: Article): string {
-  return article.thumbnailUrl || article.imageUrl || getArticleThumbnail(article.id);
+  return getArticleImage(article) || getArticleThumbnail(article.id);
 }
 
 export default function FeaturedHeadline({

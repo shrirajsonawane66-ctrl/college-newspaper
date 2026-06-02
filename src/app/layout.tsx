@@ -1,24 +1,27 @@
 import type { Metadata } from "next";
-import { Playfair_Display, EB_Garamond, Open_Sans } from "next/font/google";
+import { Playfair_Display, Source_Serif_4, Inter } from "next/font/google";
 import "./globals.css";
 import SiteShell from "@/components/layout/SiteShell";
 import { AuthProvider } from "@/components/auth/AuthProvider";
+import { ReporterWidgetWrapper } from "@/components/reporter/ReporterWidgetWrapper";
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
-  variable: "--font-serif",
+  variable: "--font-playfair",
   display: "swap",
+  weight: ["400", "600", "700", "900"],
 });
 
-const ebGaramond = EB_Garamond({
+const sourceSerif = Source_Serif_4({
   subsets: ["latin"],
-  variable: "--font-body",
+  variable: "--font-source-serif",
   display: "swap",
+  weight: ["300", "400", "600"],
 });
 
-const openSans = Open_Sans({
+const inter = Inter({
   subsets: ["latin"],
-  variable: "--font-clock",
+  variable: "--font-inter",
   display: "swap",
 });
 
@@ -33,10 +36,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${playfair.variable} ${ebGaramond.variable} ${openSans.variable}`}>
-      <body className="min-h-screen bg-paper font-body text-ink antialiased">
+    <html lang="en" className={`${playfair.variable} ${sourceSerif.variable} ${inter.variable}`}>
+      <body className="min-h-screen bg-paper text-ink antialiased">
         <AuthProvider>
           <SiteShell>{children}</SiteShell>
+          <ReporterWidgetWrapper />
         </AuthProvider>
       </body>
     </html>

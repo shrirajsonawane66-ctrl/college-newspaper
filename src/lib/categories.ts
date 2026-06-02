@@ -12,10 +12,11 @@ export interface CategoryItem {
   created_at: string;
 }
 
-let cached: CategoryItem[] | null = null;
+const CACHE_TTL = 5 * 60 * 1000;
+let cached: { data: CategoryItem[]; timestamp: number } | null = null;
 
 export async function fetchCategories(): Promise<CategoryItem[]> {
-  if (cached) return cached;
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL) return cached.data;
   try {
     const { data, error } = await supabase
       .from("categories")
@@ -23,8 +24,8 @@ export async function fetchCategories(): Promise<CategoryItem[]> {
       .order("sort_order", { ascending: true });
     if (error) throw error;
     if (data && data.length > 0) {
-      cached = data as CategoryItem[];
-      return cached;
+      cached = { data: data as CategoryItem[], timestamp: Date.now() };
+      return cached.data;
     }
   } catch {}
   return fallbackCategories.map((c, i) => ({

@@ -2,26 +2,7 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl
-
-  // Always allow public routes
-  if (
-    pathname === '/admin/login' ||
-    pathname.startsWith('/_next/') ||
-    pathname.startsWith('/static/') ||
-    pathname === '/favicon.ico' ||
-    pathname.startsWith('/images/')
-  ) {
-    console.log('[Middleware] Public route \u2014 allowing:', pathname)
-    return NextResponse.next({ request })
-  }
-
-  // Only check auth for /admin/* routes (login already handled above)
-  if (!pathname.startsWith('/admin/')) {
-    return NextResponse.next({ request })
-  }
-
-  console.log('[Middleware] Checking auth for:', pathname)
+  let supabaseResponse = NextResponse.next({ request })
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -32,29 +13,36 @@ export async function middleware(request: NextRequest) {
           return request.cookies.getAll()
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) =>
+          cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value)
+          )
+          supabaseResponse = NextResponse.next({ request })
+          cookiesToSet.forEach(({ name, value, options }) =>
+            supabaseResponse.cookies.set(name, value, options)
           )
         },
       },
     }
   )
 
-  const { data: { user }, error } = await supabase.auth.getUser()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
 
-  console.log('[Middleware] Auth result:', { pathname, hasUser: !!user, error: error?.message })
+  const isAdminRoute = request.nextUrl.pathname.startsWith('/admin')
+  const isLoginPage = request.nextUrl.pathname === '/admin/login'
 
-  if (!user) {
-    console.log('[Middleware] No user, redirecting to /admin/login')
-    const url = request.nextUrl.clone()
-    url.pathname = '/admin/login'
-    return NextResponse.redirect(url)
+  if (isAdminRoute && !isLoginPage && !user) {
+    return NextResponse.redirect(new URL('/admin/login', request.url))
   }
 
-  console.log('[Middleware] Authenticated, allowing:', pathname)
-  return NextResponse.next({ request })
+  if (isLoginPage && user) {
+    return NextResponse.redirect(new URL('/admin/dashboard', request.url))
+  }
+
+  return supabaseResponse
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|images/).*)'],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|api/public|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)'],
 }

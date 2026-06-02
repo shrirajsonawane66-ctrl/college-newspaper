@@ -29,13 +29,12 @@ export async function ensureProfile(userId: string, email: string, name?: string
       id: userId,
       email,
       name: name || email?.split('@')[0] || 'User',
-      role: 'admin',
+      role: 'user',
     })
     .select()
     .single()
 
   if (error) {
-    console.error('[Auth] Failed to create profile:', error)
     return null
   }
 

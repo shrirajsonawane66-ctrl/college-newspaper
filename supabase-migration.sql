@@ -17,9 +17,9 @@ ALTER TABLE categories ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Allow public read" ON categories
   FOR SELECT USING (true);
 
--- Allow authenticated insert/update/delete
-CREATE POLICY "Allow authenticated all" ON categories
-  FOR ALL USING (auth.role() = 'authenticated');
+-- Allow admin-only insert/update/delete
+CREATE POLICY "Allow admin all" ON categories
+  FOR ALL USING (EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin'));
 
 -- Seed default categories
 INSERT INTO categories (name, slug, description, icon, sort_order) VALUES
@@ -48,19 +48,26 @@ ALTER TABLE contact_messages ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Allow public insert" ON contact_messages
   FOR INSERT WITH CHECK (true);
 
--- Allow authenticated SELECT/UPDATE/DELETE (admin only)
-CREATE POLICY "Allow authenticated select" ON contact_messages
-  FOR SELECT USING (auth.role() = 'authenticated');
+-- Allow admin-only SELECT/UPDATE/DELETE
+CREATE POLICY "Allow admin select" ON contact_messages
+  FOR SELECT USING (EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin'));
 
-CREATE POLICY "Allow authenticated update" ON contact_messages
-  FOR UPDATE USING (auth.role() = 'authenticated');
+CREATE POLICY "Allow admin update" ON contact_messages
+  FOR UPDATE USING (EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin'));
 
-CREATE POLICY "Allow authenticated delete" ON contact_messages
-  FOR DELETE USING (auth.role() = 'authenticated');
+CREATE POLICY "Allow admin delete" ON contact_messages
+  FOR DELETE USING (EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin'));
 
 -- Add notification columns to articles
 ALTER TABLE articles ADD COLUMN IF NOT EXISTS is_new BOOLEAN DEFAULT true;
 ALTER TABLE articles ADD COLUMN IF NOT EXISTS published_at TIMESTAMPTZ DEFAULT now();
+
+-- Editorial article fields
+ALTER TABLE articles ADD COLUMN IF NOT EXISTS subheadline TEXT DEFAULT '';
+ALTER TABLE articles ADD COLUMN IF NOT EXISTS drop_cap BOOLEAN DEFAULT true;
+ALTER TABLE articles ADD COLUMN IF NOT EXISTS image_caption TEXT DEFAULT '';
+ALTER TABLE articles ADD COLUMN IF NOT EXISTS image_credit TEXT DEFAULT '';
+ALTER TABLE articles ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT now();
 
 -- Profiles table for role-based access control
 CREATE TABLE IF NOT EXISTS profiles (
@@ -90,6 +97,19 @@ CREATE POLICY "Users can insert own profile" ON profiles
 CREATE POLICY "Users can delete own profile" ON profiles
   FOR DELETE USING (auth.uid() = id);
 
+-- Allow admins to manage all profiles
+CREATE POLICY "Admins can manage all profiles" ON profiles
+  FOR ALL USING (EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin'));
+
+-- RLS policies for articles
+ALTER TABLE articles ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Allow public read" ON articles
+  FOR SELECT USING (is_published = true);
+
+CREATE POLICY "Allow authenticated all" ON articles
+  FOR ALL USING (auth.role() = 'authenticated');
+
 -- Auto-create profile on user signup
 CREATE OR REPLACE FUNCTION handle_new_user()
 RETURNS TRIGGER SECURITY DEFINER
@@ -101,7 +121,7 @@ BEGIN
     NEW.id,
     COALESCE(NEW.email, ''),
     COALESCE(NEW.raw_user_meta_data ->> 'name', split_part(COALESCE(NEW.email, ''), '@', 1), 'User'),
-    'admin'
+    'user'
   );
   RETURN NEW;
 END;

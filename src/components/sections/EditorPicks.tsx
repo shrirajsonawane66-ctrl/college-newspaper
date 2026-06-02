@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import type { Article } from "@/lib/data";
 
 export default function EditorPicks({ articles }: { articles: Article[] }) {
-  const picks = articles.slice(1, 5);
+  const picks = articles.filter((a) => a.editorPick).slice(0, 4);
 
   if (picks.length === 0) return null;
 

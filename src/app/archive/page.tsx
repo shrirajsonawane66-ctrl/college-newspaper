@@ -14,6 +14,7 @@ import ArticleCard from "@/components/ui/ArticleCard";
 interface ArticleRow {
   id: string;
   title: string;
+  subheadline: string;
   summary: string;
   content: string;
   category: string;
@@ -22,9 +23,14 @@ interface ArticleRow {
   author_role: string;
   image_url: string;
   thumbnail_url: string;
+  cover_image: string;
+  image_caption: string;
+  image_credit: string;
   published_at: string;
   is_published: boolean;
+  drop_cap: boolean;
   read_time: string;
+  tags: string;
 }
 
 const WEEKDAYS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
@@ -45,25 +51,35 @@ export default function ArchivePage() {
       .select("*")
       .eq("is_published", true)
       .order("created_at", { ascending: false })
+      .limit(200)
       .then(({ data }) => {
-        const mapped: Article[] = (data || []).map((row: ArticleRow) => ({
+        const mapped: Article[] = (data || []).map((row: ArticleRow) => {
+        const imgUrl = row.image_url || row.thumbnail_url || row.cover_image || "";
+        return {
           id: row.id,
           title: row.title,
+          subheadline: row.subheadline || "",
           summary: row.summary,
           content: row.content,
           category: row.category,
           categorySlug: row.category_slug,
-          imageUrl: row.image_url,
-          thumbnailUrl: row.thumbnail_url || "",
+          imageUrl: imgUrl,
+          thumbnailUrl: imgUrl,
+          coverImage: imgUrl,
+          imageCaption: row.image_caption || "",
+          imageCredit: row.image_credit || "",
           author: row.author,
           authorRole: row.author_role,
           publishedAt: row.published_at,
           isPublished: row.is_published,
+          dropCap: row.drop_cap !== false,
           featured: false,
           trending: false,
           editorPick: false,
           readTime: row.read_time,
-        }));
+          tags: row.tags || "",
+        };
+      });
         setAllArticles(mapped);
         setLoading(false);
       });
@@ -114,7 +130,7 @@ export default function ArchivePage() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search archives..."
-              className="pl-8 pr-3 py-1.5 text-sm border border-border bg-paper focus:outline-none font-body placeholder:text-ink-faded"
+              className="pl-8 pr-3 py-1.5 text-sm border border-border bg-paper focus:outline-none font-sans placeholder:text-ink-faded"
             />
           </div>
         </div>
@@ -126,7 +142,7 @@ export default function ArchivePage() {
                 <button onClick={prevMonth} className="p-1 hover:bg-paper-dark transition-colors">
                   <ChevronLeft className="w-4 h-4" />
                 </button>
-                <button onClick={goToday} className="text-xs font-serif font-semibold text-sepia hover:underline">
+                <button onClick={goToday} className="text-xs font-sans font-semibold text-sepia hover:underline">
                   {MONTHS[month]} {year}
                 </button>
                 <button onClick={nextMonth} className="p-1 hover:bg-paper-dark transition-colors">
@@ -135,7 +151,7 @@ export default function ArchivePage() {
               </div>
               <div className="grid grid-cols-7 gap-px p-2 text-center">
                 {WEEKDAYS.map((d) => (
-                  <div key={d} className="text-[10px] text-ink-faded py-1 uppercase tracking-wider font-body font-semibold">{d}</div>
+                  <div key={d} className="text-[10px] text-ink-faded py-1 uppercase tracking-wider font-sans font-semibold">{d}</div>
                 ))}
                 {padding.map((_, i) => <div key={`pad-${i}`} className="py-1" />)}
                 {days.map((d) => {
@@ -145,7 +161,7 @@ export default function ArchivePage() {
                   });
                   const isToday = d === now.getDate() && month === now.getMonth() && year === now.getFullYear();
                   return (
-                    <div key={d} className={`py-1 text-xs relative font-body ${isToday ? "bg-ink text-paper font-bold" : "text-ink-light"}`}>
+                    <div key={d} className={`py-1 text-xs relative font-sans ${isToday ? "bg-ink text-paper font-bold" : "text-ink-light"}`}>
                       {d}
                       {hasArticle && <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-1 bg-sepia" />}
                     </div>
@@ -168,8 +184,8 @@ export default function ArchivePage() {
               </div>
             ) : (
               <div className="text-center py-16 border border-dashed border-border">
-                <p className="text-ink-faded font-body">No articles found for this period.</p>
-                <button onClick={goToday} className="mt-1 text-sm text-sepia hover:underline font-body">View this month</button>
+                <p className="text-ink-faded font-sans">No articles found for this period.</p>
+                <button onClick={goToday} className="mt-1 text-sm text-sepia hover:underline font-sans">View this month</button>
               </div>
             )}
           </div>

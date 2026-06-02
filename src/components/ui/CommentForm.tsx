@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Send } from "lucide-react";
 import { supabase } from "@/lib/supabase";
@@ -10,6 +10,13 @@ export default function CommentForm({ articleId, onSuccess }: { articleId: strin
   const [content, setContent] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const successTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (successTimerRef.current) clearTimeout(successTimerRef.current);
+    };
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,7 +26,7 @@ export default function CommentForm({ articleId, onSuccess }: { articleId: strin
     try {
       setLoading(true);
 
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from("comments")
         .insert([
           {
@@ -30,18 +37,16 @@ export default function CommentForm({ articleId, onSuccess }: { articleId: strin
         ]);
 
       if (error) {
-        console.error("Comment insert error:", error);
         return;
       }
 
-      console.log("Comment inserted", data);
       setSuccess(true);
       setUsername("");
       setContent("");
       onSuccess?.();
-      setTimeout(() => setSuccess(false), 3000);
-    } catch (err) {
-      console.error("Comment submit exception:", err);
+      if (successTimerRef.current) clearTimeout(successTimerRef.current);
+      successTimerRef.current = setTimeout(() => setSuccess(false), 3000);
+    } catch {
     } finally {
       setLoading(false);
     }
@@ -62,7 +67,7 @@ export default function CommentForm({ articleId, onSuccess }: { articleId: strin
           onChange={(e) => setUsername(e.target.value)}
           placeholder="Your name"
           required
-          className="w-full px-3 py-2 text-sm border border-border bg-paper focus:outline-none font-body placeholder:text-ink-faded"
+          className="w-full px-3 py-2 text-sm border border-border bg-paper focus:outline-none font-sans placeholder:text-ink-faded"
         />
         <textarea
           value={content}
@@ -70,19 +75,19 @@ export default function CommentForm({ articleId, onSuccess }: { articleId: strin
           placeholder="Share your thoughts..."
           rows={3}
           required
-          className="w-full px-3 py-2 text-sm border border-border bg-paper focus:outline-none font-body placeholder:text-ink-faded resize-none"
+          className="w-full px-3 py-2 text-sm border border-border bg-paper focus:outline-none font-sans placeholder:text-ink-faded resize-none"
         />
         <div className="flex items-center justify-between">
-          <p className="text-[10px] text-ink-faded font-body">Your comment will be reviewed before publication.</p>
+          <p className="text-[11px] text-ink-faded font-sans">Share your thoughts with the community.</p>
           {success ? (
-            <span className="text-[11px] text-emerald-600 font-body font-semibold">
-              Comment submitted for review
+            <span className="text-xs text-emerald-600 font-sans font-semibold">
+              Comment posted!
             </span>
           ) : (
             <button
               type="submit"
               disabled={loading}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-ink text-paper text-xs font-body font-semibold hover:bg-ink-light transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-ink text-paper text-xs font-sans font-semibold hover:bg-ink-light transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? (
                 <span className="inline-block w-3 h-3 border border-paper/40 border-t-paper rounded-full animate-spin" />

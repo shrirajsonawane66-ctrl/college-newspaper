@@ -212,7 +212,7 @@ export default function AboutPage() {
                         className="w-28 h-28 sm:w-32 sm:h-32 mx-auto border-2 border-gold/30 bg-paper-dark flex items-center justify-center relative overflow-hidden cursor-pointer"
                       >
                         {profilePic ? (
-                          <img src={profilePic} alt="Shriraj Sonawane"
+                          <img src={profilePic} alt="Shriraj Sonawane" loading="lazy"
                             className="w-full h-full object-cover"
                           />
                         ) : (

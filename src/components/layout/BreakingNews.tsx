@@ -36,13 +36,13 @@ export default function BreakingNews() {
 
         <Link
           href="/archive"
-          className="shrink-0 text-[11px] uppercase tracking-[0.18em] text-gold-light/80 hover:text-gold-light transition-colors px-3 font-body font-semibold h-full flex items-center"
+          className="shrink-0 text-xs uppercase tracking-[0.18em] text-gold-light/80 hover:text-gold-light transition-colors px-3 font-sans font-semibold h-full flex items-center"
         >
           All News &rarr;
         </Link>
         <Link
           href="/about"
-          className="shrink-0 text-[11px] uppercase tracking-[0.18em] text-gold-light/80 hover:text-gold-light transition-colors px-3 font-body font-semibold border-l border-gold/20 h-full flex items-center"
+          className="shrink-0 text-xs uppercase tracking-[0.18em] text-gold-light/80 hover:text-gold-light transition-colors px-3 font-sans font-semibold border-l border-gold/20 h-full flex items-center"
         >
           Founder
         </Link>

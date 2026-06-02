@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Mail, MapPin, Phone, Clock, Send, CheckCircle, XCircle } from "lucide-react";
 import BreakingNews from "@/components/layout/BreakingNews";
@@ -19,6 +19,13 @@ export default function ContactPage() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [toast, setToast] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (toastTimer.current) clearTimeout(toastTimer.current);
+    };
+  }, []);
 
   const validate = useCallback((): boolean => {
     const e: Partial<Record<string, string>> = {};
@@ -33,8 +40,9 @@ export default function ContactPage() {
   }, [name, email, subject, message]);
 
   const showToast = (type: "success" | "error", text: string) => {
+    if (toastTimer.current) clearTimeout(toastTimer.current);
     setToast({ type, text });
-    setTimeout(() => setToast(null), 4000);
+    toastTimer.current = setTimeout(() => setToast(null), 4000);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -44,22 +52,16 @@ export default function ContactPage() {
     setLoading(true);
 
     const payload = { name: name.trim(), email: email.trim(), subject: subject.trim(), message: message.trim() };
-    console.log("[Contact] Submitting payload:", payload);
 
     try {
       const { data, error } = await supabase
         .from("contact_messages")
         .insert([payload]);
 
-      console.log("[Contact] Supabase response:", { data, error });
-
       if (error) {
-        console.error("[Contact] Insert error:", error);
         showToast("error", error.message);
         return;
       }
-
-      console.log("[Contact] Message inserted successfully");
       showToast("success", "Message sent successfully! Our editorial team will respond within 24 hours.");
       setSuccess(true);
       setName("");
@@ -67,9 +69,8 @@ export default function ContactPage() {
       setSubject("");
       setMessage("");
       setErrors({});
-    } catch (err) {
-      console.error("[Contact] Unexpected error:", err);
-      showToast("error", "Failed to send message. Please try again.");
+    } catch (err: unknown) {
+      showToast("error", err instanceof Error ? err.message : "Failed to send message. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -98,7 +99,7 @@ export default function ContactPage() {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className={`fixed top-4 right-4 z-50 px-5 py-3 text-sm font-body shadow-lg border flex items-center gap-2.5 ${
+            className={`fixed top-4 right-4 z-50 px-5 py-3 text-sm font-sans shadow-lg border flex items-center gap-2.5 ${
               toast.type === "success"
                 ? "bg-emerald-50 text-emerald-800 border-emerald-200"
                 : "bg-red-50 text-red-800 border-red-200"
@@ -143,8 +144,8 @@ export default function ContactPage() {
               animate={{ opacity: 1 }}
               transition={{ duration: 0.5, delay: 0.3 }}
               className="mt-3 text-sm text-ink-light font-body max-w-xl mx-auto leading-relaxed"
-            >
-              Have a story tip, editorial inquiry, or feedback? Our newsroom welcomes correspondence from readers.
+              >
+                Have a story tip, editorial inquiry, or feedback? Our newsroom welcomes correspondence from readers.
             </motion.p>
           </div>
 
@@ -172,16 +173,16 @@ export default function ContactPage() {
                         <CheckCircle className="w-8 h-8 text-emerald-600" />
                       </motion.div>
                       <h3 className="font-serif text-2xl font-bold text-ink">Message Delivered</h3>
-                      <p className="text-sm text-ink-light mt-2 font-body max-w-sm mx-auto leading-relaxed">
+                      <p className="text-sm text-ink-light mt-2 font-sans max-w-sm mx-auto leading-relaxed">
                         Your message has been logged in our editorial system. Our team will respond within 24 hours.
                       </p>
                       <div className="newspaper-rule-thick max-w-[40px] mx-auto my-4" />
-                      <p className="text-xs text-ink-faded font-body">
+                      <p className="text-xs text-ink-faded font-sans">
                         A confirmation has been recorded. Please allow one business day for a response.
                       </p>
                       <button
                         onClick={handleReset}
-                        className="mt-5 px-4 py-2 border border-border text-xs uppercase tracking-wider text-ink-light font-body font-semibold hover:bg-paper-dark transition-colors"
+                        className="mt-5 px-4 py-2 border border-border text-xs uppercase tracking-wider text-ink-light font-sans font-semibold hover:bg-paper-dark transition-colors"
                       >
                         Send Another Message
                       </button>
@@ -202,7 +203,7 @@ export default function ContactPage() {
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-1.5">
-                          <label className="block text-[10px] uppercase tracking-[0.15em] text-ink-lighter font-semibold font-body">
+                          <label className="block text-[10px] uppercase tracking-[0.15em] text-ink-lighter font-semibold font-sans">
                             Full Name <span className="text-red-400">*</span>
                           </label>
                           <input
@@ -212,10 +213,10 @@ export default function ContactPage() {
                             placeholder="John Doe"
                             className="w-full px-3 py-2.5 text-sm border border-border bg-paper focus:outline-none font-body placeholder:text-ink-faded/40 transition-all duration-200 focus:border-gold-light/50"
                           />
-                          {errors.name && <p className="text-[10px] text-red-500 font-body">{errors.name}</p>}
+                          {errors.name && <p className="text-[10px] text-red-500 font-sans">{errors.name}</p>}
                         </div>
                         <div className="space-y-1.5">
-                          <label className="block text-[10px] uppercase tracking-[0.15em] text-ink-lighter font-semibold font-body">
+                          <label className="block text-[10px] uppercase tracking-[0.15em] text-ink-lighter font-semibold font-sans">
                             Email Address <span className="text-red-400">*</span>
                           </label>
                           <input
@@ -225,12 +226,12 @@ export default function ContactPage() {
                             placeholder="john@wccbm.edu.in"
                             className="w-full px-3 py-2.5 text-sm border border-border bg-paper focus:outline-none font-body placeholder:text-ink-faded/40 transition-all duration-200 focus:border-gold-light/50"
                           />
-                          {errors.email && <p className="text-[10px] text-red-500 font-body">{errors.email}</p>}
+                          {errors.email && <p className="text-[10px] text-red-500 font-sans">{errors.email}</p>}
                         </div>
                       </div>
 
                       <div className="space-y-1.5">
-                        <label className="block text-[10px] uppercase tracking-[0.15em] text-ink-lighter font-semibold font-body">
+                        <label className="block text-[10px] uppercase tracking-[0.15em] text-ink-lighter font-semibold font-sans">
                           Subject <span className="text-red-400">*</span>
                         </label>
                         <input
@@ -240,15 +241,15 @@ export default function ContactPage() {
                           placeholder="Story Tip, Editorial Feedback, General Inquiry..."
                           className="w-full px-3 py-2.5 text-sm border border-border bg-paper focus:outline-none font-body placeholder:text-ink-faded/40 transition-all duration-200 focus:border-gold-light/50"
                         />
-                        {errors.subject && <p className="text-[10px] text-red-500 font-body">{errors.subject}</p>}
+                        {errors.subject && <p className="text-[10px] text-red-500 font-sans">{errors.subject}</p>}
                       </div>
 
                       <div className="space-y-1.5">
                         <div className="flex items-center justify-between">
-                          <label className="block text-[10px] uppercase tracking-[0.15em] text-ink-lighter font-semibold font-body">
+                          <label className="block text-[10px] uppercase tracking-[0.15em] text-ink-lighter font-semibold font-sans">
                             Message <span className="text-red-400">*</span>
                           </label>
-                          <span className={`text-[10px] font-body tabular-nums ${message.length < 10 ? "text-red-400" : "text-ink-faded"}`}>
+                          <span className={`text-[10px] font-sans tabular-nums ${message.length < 10 ? "text-red-400" : "text-ink-faded"}`}>
                             {message.length} / 10 min
                           </span>
                         </div>
@@ -259,13 +260,13 @@ export default function ContactPage() {
                           placeholder="Share your story, inquiry, or feedback with our editorial team..."
                           className="w-full px-3 py-2.5 text-sm border border-border bg-paper focus:outline-none font-body placeholder:text-ink-faded/40 resize-none transition-all duration-200 focus:border-gold-light/50 leading-relaxed"
                         />
-                        {errors.message && <p className="text-[10px] text-red-500 font-body">{errors.message}</p>}
+                        {errors.message && <p className="text-[10px] text-red-500 font-sans">{errors.message}</p>}
                       </div>
 
                       <button
                         type="submit"
                         disabled={loading}
-                        className="w-full py-3 bg-ink text-paper text-sm uppercase tracking-wider font-body font-bold hover:bg-ink-light transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 group"
+                        className="w-full py-3 bg-ink text-paper text-sm uppercase tracking-wider font-sans font-bold hover:bg-ink-light transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 group"
                       >
                         {loading ? (
                           <>
@@ -295,8 +296,8 @@ export default function ContactPage() {
               >
                 <h3 className="font-serif text-sm font-bold text-ink uppercase tracking-[0.1em] mb-4">Contact Information</h3>
                 <div className="newspaper-rule-thick max-w-[30px] mb-4" />
-                <div className="space-y-3.5 text-sm text-ink-light font-body">
-                  <div className="flex items-start gap-3">
+                  <div className="space-y-3.5 text-sm text-ink-light font-body">
+                    <div className="flex items-start gap-3">
                     <MapPin className="w-4 h-4 mt-0.5 shrink-0 text-ink-faded" />
                     <span className="leading-relaxed">WCCBM Campus, College Road, Nashik, Maharashtra, India</span>
                   </div>
@@ -333,7 +334,7 @@ export default function ContactPage() {
                     Have a news tip, campus scoop, or story idea? Our editors are always looking for the next big story.
                   </p>
                   <div className="newspaper-rule-thick max-w-[30px] opacity-20 my-3" />
-                  <a href="mailto:timeline@wccbm.edu.in" className="inline-flex items-center gap-1 text-sm text-sepia-light hover:text-sepia transition-colors font-semibold font-body group">
+                  <a href="mailto:timeline@wccbm.edu.in" className="inline-flex items-center gap-1 text-sm text-sepia-light hover:text-sepia transition-colors font-semibold font-sans group">
                     timeline@wccbm.edu.in
                     <span className="transition-transform duration-300 group-hover:translate-x-1">&rarr;</span>
                   </a>
@@ -346,7 +347,7 @@ export default function ContactPage() {
                 transition={{ duration: 0.5, delay: 0.4 }}
                 className="border border-border bg-paper p-5 text-center"
               >
-                <p className="text-[10px] uppercase tracking-[0.2em] text-ink-faded font-body font-semibold">Response Time</p>
+                <p className="text-[10px] uppercase tracking-[0.2em] text-ink-faded font-sans font-semibold">Response Time</p>
                 <p className="font-serif text-lg font-bold text-ink mt-1">Within 24 Hours</p>
                 <p className="text-[11px] text-ink-light font-body mt-0.5">Our editorial team aims to respond to all inquiries within one business day.</p>
               </motion.div>

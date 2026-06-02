@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -16,16 +16,27 @@ import { useAuth } from "@/hooks/useAuth";
 interface ArticleRow {
   id: string;
   title: string;
+  subheadline: string;
   summary: string;
+  content: string;
   category: string;
   category_slug: string;
   author: string;
+  author_role: string;
+  image_url: string;
+  thumbnail_url: string;
+  cover_image: string;
+  image_caption: string;
+  image_credit: string;
   published_at: string;
   is_published: boolean;
   featured: boolean;
   trending: boolean;
   editor_pick: boolean;
+  drop_cap: boolean;
   read_time: string;
+  is_new: boolean;
+  tags: string;
 }
 
 const emptyForm = {
@@ -56,12 +67,20 @@ export default function CategoryStudioPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [notification, setNotification] = useState<{ type: "success" | "error"; message: string } | null>(null);
+  const notifTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [articleSearch, setArticleSearch] = useState("");
   const [allArticles, setAllArticles] = useState<ArticleRow[]>([]);
 
   const showNotification = useCallback((type: "success" | "error", message: string) => {
+    if (notifTimer.current) clearTimeout(notifTimer.current);
     setNotification({ type, message });
-    setTimeout(() => setNotification(null), 3500);
+    notifTimer.current = setTimeout(() => setNotification(null), 3500);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (notifTimer.current) clearTimeout(notifTimer.current);
+    };
   }, []);
 
   // Load existing category for editing
@@ -177,7 +196,7 @@ export default function CategoryStudioPage() {
             <div>
               <div className="section-head">Step 1 of 5</div>
               <h2 className="font-serif text-xl font-bold text-ink mt-0.5 tracking-tight">Category Details</h2>
-              <p className="text-sm text-ink-faded font-body mt-0.5">
+              <p className="text-sm text-ink-faded font-sans mt-0.5">
                 {editingId ? `Editing "${form.name}"` : "Create a new section for your newspaper"}
               </p>
             </div>
@@ -185,7 +204,7 @@ export default function CategoryStudioPage() {
             <div className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-[10px] uppercase tracking-[0.15em] text-ink-lighter font-semibold mb-1.5 font-body">
+                  <label className="block text-[10px] uppercase tracking-[0.15em] text-ink-lighter font-semibold mb-1.5 font-sans">
                     Section Name <span className="text-red-400">*</span>
                   </label>
                   <input
@@ -200,7 +219,7 @@ export default function CategoryStudioPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] uppercase tracking-[0.15em] text-ink-lighter font-semibold mb-1.5 font-body">
+                  <label className="block text-[10px] uppercase tracking-[0.15em] text-ink-lighter font-semibold mb-1.5 font-sans">
                     URL Slug
                   </label>
                   <input
@@ -210,14 +229,14 @@ export default function CategoryStudioPage() {
                     placeholder="campus-news"
                     className="w-full px-3 py-3 text-sm font-mono text-ink border border-border bg-paper focus:outline-none placeholder:text-ink-faded/40 transition-all duration-200 focus:border-gold-light/50"
                   />
-                  <p className="text-[10px] text-ink-faded mt-1 font-body">
+                  <p className="text-[10px] text-ink-faded mt-1 font-sans">
                     /category/<span className="font-mono text-sepia">{form.slug || "slug"}</span>
                   </p>
                 </div>
               </div>
 
               <div>
-                <label className="block text-[10px] uppercase tracking-[0.15em] text-ink-lighter font-semibold mb-1.5 font-body">
+                <label className="block text-[10px] uppercase tracking-[0.15em] text-ink-lighter font-semibold mb-1.5 font-sans">
                   Description
                 </label>
                 <textarea
@@ -237,7 +256,7 @@ export default function CategoryStudioPage() {
                     onChange={(e) => updateForm("visible", e.target.checked)}
                     className="w-3.5 h-3.5 accent-sepia"
                   />
-                  <span className="text-sm font-body text-ink-light group-hover:text-ink transition-colors">
+                  <span className="text-sm font-sans text-ink-light group-hover:text-ink transition-colors">
                     Visible in navigation
                   </span>
                 </label>
@@ -252,12 +271,12 @@ export default function CategoryStudioPage() {
             <div>
               <div className="section-head">Step 2 of 5</div>
               <h2 className="font-serif text-xl font-bold text-ink mt-0.5 tracking-tight">Banner &amp; Hero Image</h2>
-              <p className="text-sm text-ink-faded font-body mt-0.5">Set section banner and hero imagery for the category page header.</p>
+              <p className="text-sm text-ink-faded font-sans mt-0.5">Set section banner and hero imagery for the category page header.</p>
             </div>
 
             <div className="space-y-6">
               <div>
-                <label className="block text-[10px] uppercase tracking-[0.15em] text-ink-lighter font-semibold mb-1.5 font-body">
+                <label className="block text-[10px] uppercase tracking-[0.15em] text-ink-lighter font-semibold mb-1.5 font-sans">
                   Section Banner Image
                 </label>
                 <div className="border-2 border-dashed border-border hover:border-gold-light hover:bg-paper-dark/50 transition-all p-8 text-center cursor-pointer"
@@ -269,10 +288,10 @@ export default function CategoryStudioPage() {
                   {form.image_url ? (
                     <div className="relative group">
                       <div className="aspect-[21/9] border border-border overflow-hidden bg-paper-dark">
-                        <img src={form.image_url} alt="Banner" className="w-full h-full object-cover" />
+                        <img src={form.image_url} alt="Banner" loading="lazy" className="w-full h-full object-cover" />
                         <div className="absolute inset-0 bg-ink/0 group-hover:bg-ink/40 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
                           <button onClick={(e) => { e.stopPropagation(); updateForm("image_url", ""); }}
-                            className="px-3 py-1.5 bg-red-500/80 text-white text-[10px] uppercase tracking-wider font-body font-semibold">
+                            className="px-3 py-1.5 bg-red-500/80 text-white text-[10px] uppercase tracking-wider font-sans font-semibold">
                             Remove
                           </button>
                         </div>
@@ -285,15 +304,15 @@ export default function CategoryStudioPage() {
                           <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0022.5 18.75V5.25A2.25 2.25 0 0020.25 3H3.75A2.25 2.25 0 001.5 5.25v13.5A2.25 2.25 0 003.75 21z" />
                         </svg>
                       </div>
-                      <p className="text-sm font-body text-ink-light"><span className="font-semibold text-ink">Click to add</span> banner image URL</p>
-                      <p className="text-[11px] text-ink-faded font-body">21:9 ratio recommended</p>
+                      <p className="text-sm font-sans text-ink-light"><span className="font-semibold text-ink">Click to add</span> banner image URL</p>
+                      <p className="text-[11px] text-ink-faded font-sans">21:9 ratio recommended</p>
                     </div>
                   )}
                 </div>
               </div>
 
               <div>
-                <label className="block text-[10px] uppercase tracking-[0.15em] text-ink-lighter font-semibold mb-1.5 font-body">
+                <label className="block text-[10px] uppercase tracking-[0.15em] text-ink-lighter font-semibold mb-1.5 font-sans">
                   Hero Image (optional)
                 </label>
                 <div className="border-2 border-dashed border-border hover:border-gold-light hover:bg-paper-dark/50 transition-all p-8 text-center cursor-pointer"
@@ -305,10 +324,10 @@ export default function CategoryStudioPage() {
                   {form.hero_url ? (
                     <div className="relative group">
                       <div className="aspect-video border border-border overflow-hidden bg-paper-dark">
-                        <img src={form.hero_url} alt="Hero" className="w-full h-full object-cover" />
+                        <img src={form.hero_url} alt="Hero" loading="lazy" className="w-full h-full object-cover" />
                         <div className="absolute inset-0 bg-ink/0 group-hover:bg-ink/40 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
                           <button onClick={(e) => { e.stopPropagation(); updateForm("hero_url", ""); }}
-                            className="px-3 py-1.5 bg-red-500/80 text-white text-[10px] uppercase tracking-wider font-body font-semibold">
+                            className="px-3 py-1.5 bg-red-500/80 text-white text-[10px] uppercase tracking-wider font-sans font-semibold">
                             Remove
                           </button>
                         </div>
@@ -321,8 +340,8 @@ export default function CategoryStudioPage() {
                           <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0022.5 18.75V5.25A2.25 2.25 0 0020.25 3H3.75A2.25 2.25 0 001.5 5.25v13.5A2.25 2.25 0 003.75 21z" />
                         </svg>
                       </div>
-                      <p className="text-sm font-body text-ink-light"><span className="font-semibold text-ink">Click to add</span> hero image URL</p>
-                      <p className="text-[11px] text-ink-faded font-body">16:9 ratio recommended</p>
+                      <p className="text-sm font-sans text-ink-light"><span className="font-semibold text-ink">Click to add</span> hero image URL</p>
+                      <p className="text-[11px] text-ink-faded font-sans">16:9 ratio recommended</p>
                     </div>
                   )}
                 </div>
@@ -337,12 +356,12 @@ export default function CategoryStudioPage() {
             <div>
               <div className="section-head">Step 3 of 5</div>
               <h2 className="font-serif text-xl font-bold text-ink mt-0.5 tracking-tight">Category Settings</h2>
-              <p className="text-sm text-ink-faded font-body mt-0.5">SEO metadata and advanced section configuration.</p>
+              <p className="text-sm text-ink-faded font-sans mt-0.5">SEO metadata and advanced section configuration.</p>
             </div>
 
             <div className="space-y-4">
               <div>
-                <label className="block text-[10px] uppercase tracking-[0.15em] text-ink-lighter font-semibold mb-1.5 font-body">
+                <label className="block text-[10px] uppercase tracking-[0.15em] text-ink-lighter font-semibold mb-1.5 font-sans">
                   Custom Meta Title
                 </label>
                 <input
@@ -355,7 +374,7 @@ export default function CategoryStudioPage() {
               </div>
 
               <div>
-                <label className="block text-[10px] uppercase tracking-[0.15em] text-ink-lighter font-semibold mb-1.5 font-body">
+                <label className="block text-[10px] uppercase tracking-[0.15em] text-ink-lighter font-semibold mb-1.5 font-sans">
                   SEO Meta Description
                 </label>
                 <textarea
@@ -365,7 +384,7 @@ export default function CategoryStudioPage() {
                   placeholder={form.description || "A short description for search engines..."}
                   className="w-full px-3 py-2 text-sm border border-border bg-paper focus:outline-none font-body placeholder:text-ink-faded/40 resize-none transition-all duration-200 focus:border-gold-light/50"
                 />
-                <p className="text-[10px] text-ink-faded mt-1 font-body">
+                <p className="text-[10px] text-ink-faded mt-1 font-sans">
                   {form.seo_description.length} / 160 characters
                   {form.seo_description.length > 160 && (
                     <span className="text-amber-600 ml-1">(recommended max 160)</span>
@@ -374,7 +393,7 @@ export default function CategoryStudioPage() {
               </div>
 
               <div className="pt-2">
-                <p className="text-[10px] uppercase tracking-[0.15em] text-ink-lighter font-semibold mb-2 font-body">
+                <p className="text-[10px] uppercase tracking-[0.15em] text-ink-lighter font-semibold mb-2 font-sans">
                   Visibility &amp; Promotion
                 </p>
                 <div className="space-y-2">
@@ -385,10 +404,10 @@ export default function CategoryStudioPage() {
                       onChange={(e) => updateForm("visible", e.target.checked)}
                       className="w-3.5 h-3.5 accent-sepia"
                     />
-                    <span className="text-sm font-body text-ink-light group-hover:text-ink transition-colors">
+                    <span className="text-sm font-sans text-ink-light group-hover:text-ink transition-colors">
                       Show in Navigation
                     </span>
-                    <span className="text-[10px] text-ink-faded font-body ml-auto">
+                    <span className="text-[10px] text-ink-faded font-sans ml-auto">
                       Appears in navbar and footer
                     </span>
                   </label>
@@ -404,7 +423,7 @@ export default function CategoryStudioPage() {
             <div>
               <div className="section-head">Step 4 of 5</div>
               <h2 className="font-serif text-xl font-bold text-ink mt-0.5 tracking-tight">Manage Articles</h2>
-              <p className="text-sm text-ink-faded font-body mt-0.5">
+              <p className="text-sm text-ink-faded font-sans mt-0.5">
                 {editingId
                   ? `Manage all articles in "${form.name}" section`
                   : "Save the category first to manage articles"}
@@ -413,7 +432,7 @@ export default function CategoryStudioPage() {
 
             {!editingId ? (
               <div className="border-2 border-dashed border-border p-10 text-center">
-                <p className="text-sm text-ink-faded font-body">
+                <p className="text-sm text-ink-faded font-sans">
                   Complete the previous steps and publish this category to start managing articles.
                 </p>
               </div>
@@ -425,27 +444,27 @@ export default function CategoryStudioPage() {
                     <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-ink-faded" />
                     <input type="text" value={articleSearch} onChange={(e) => setArticleSearch(e.target.value)}
                       placeholder="Search articles in this section..."
-                      className="w-full pl-8 pr-3 py-1.5 text-sm border border-border bg-paper focus:outline-none font-body placeholder:text-ink-faded" />
+                      className="w-full pl-8 pr-3 py-1.5 text-sm border border-border bg-paper focus:outline-none font-sans placeholder:text-ink-faded" />
                   </div>
                   <a href="/admin/studio"
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-ink text-paper text-[10px] uppercase tracking-wider font-body font-semibold hover:bg-ink-light transition-colors shrink-0">
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-ink text-paper text-[10px] uppercase tracking-wider font-sans font-semibold hover:bg-ink-light transition-colors shrink-0">
                     <Plus className="w-3.5 h-3.5" /> New Article
                   </a>
                 </div>
 
                 {/* Article count */}
-                <p className="text-[11px] text-ink-faded font-body">
+                <p className="text-[11px] text-ink-faded font-sans">
                   {allArticles.length} article{allArticles.length !== 1 ? "s" : ""} in this section
                 </p>
 
                 {/* Article list */}
                 {filteredArticles.length === 0 ? (
                   <div className="text-center py-12 border border-dashed border-border">
-                    <p className="text-sm text-ink-faded font-body">
+                    <p className="text-sm text-ink-faded font-sans">
                       {articleSearch ? "No articles match your search." : "No articles in this section yet."}
                     </p>
                     {!articleSearch && (
-                      <a href="/admin/studio" className="mt-2 inline-block text-sm text-sepia hover:underline font-body">
+                      <a href="/admin/studio" className="mt-2 inline-block text-sm text-sepia hover:underline font-sans">
                         Create the first article &rarr;
                       </a>
                     )}
@@ -471,13 +490,13 @@ export default function CategoryStudioPage() {
                           </button>
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-ink truncate font-body">{article.title}</p>
-                          <p className="text-[11px] text-ink-faded font-body">
+                          <p className="text-sm font-medium text-ink truncate font-sans">{article.title}</p>
+                          <p className="text-[11px] text-ink-faded font-sans">
                             {article.author} &middot; {article.published_at} &middot; {article.read_time}
                           </p>
                         </div>
                         <div className="flex items-center gap-2 shrink-0">
-                          <span className={`text-[9px] uppercase tracking-wider font-semibold px-1.5 py-0.5 font-body ${
+                          <span className={`text-[9px] uppercase tracking-wider font-semibold px-1.5 py-0.5 font-sans ${
                             article.is_published ? "bg-sepia/10 text-sepia-dark" : "bg-paper-dark text-ink-faded"
                           }`}>
                             {article.is_published ? "Live" : "Draft"}
@@ -506,7 +525,7 @@ export default function CategoryStudioPage() {
             <div>
               <div className="section-head">Step 5 of 5</div>
               <h2 className="font-serif text-xl font-bold text-ink mt-0.5 tracking-tight">Publish Section</h2>
-              <p className="text-sm text-ink-faded font-body mt-0.5">
+              <p className="text-sm text-ink-faded font-sans mt-0.5">
                 Your section configuration is ready. Choose how to release it.
               </p>
             </div>
@@ -516,7 +535,7 @@ export default function CategoryStudioPage() {
               <h3 className="font-serif font-bold text-ink text-base leading-snug">
                 {form.name || "Untitled Section"}
               </h3>
-              <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-ink-faded font-body">
+              <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-ink-faded font-sans">
                 <span>/{form.slug || "slug"}</span>
                 <span className={`inline-flex items-center gap-1 ${form.visible ? "text-emerald-600" : "text-zinc-400"}`}>
                   <span className={`w-1.5 h-1.5 rounded-full ${form.visible ? "bg-emerald-400" : "bg-zinc-300"}`} />
@@ -534,7 +553,7 @@ export default function CategoryStudioPage() {
             {/* Validation */}
             {!form.name && (
               <div className="border border-amber-200 bg-amber-50/50 px-4 py-3">
-                <p className="text-[11px] text-amber-800 font-body font-semibold flex items-center gap-1.5">
+                <p className="text-[11px] text-amber-800 font-sans font-semibold flex items-center gap-1.5">
                   <XCircle className="w-3.5 h-3.5 shrink-0" />
                   Section name is required
                 </p>
@@ -550,12 +569,12 @@ export default function CategoryStudioPage() {
                     showNotification("success", editingId ? "Section updated successfully!" : "Section created successfully!");
                     invalidateCache();
                     setTimeout(() => router.push("/admin/dashboard?tab=categories"), 1500);
-                  } catch (e: any) {
-                    showNotification("error", e.message || "Failed to save section.");
+                  } catch (e: unknown) {
+                    showNotification("error", e instanceof Error ? e.message : "Failed to save section.");
                   }
                 }}
                 disabled={!form.name || saving}
-                className="w-full py-3 bg-gold text-paper text-sm uppercase tracking-wider font-body font-bold hover:bg-gold/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-sm"
+                className="w-full py-3 bg-gold text-paper text-sm uppercase tracking-wider font-sans font-bold hover:bg-gold/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-sm"
               >
                 {saving ? (
                   <>
@@ -576,12 +595,12 @@ export default function CategoryStudioPage() {
                     await handleSave();
                     showNotification("success", "Draft saved!");
                     invalidateCache();
-                  } catch (e: any) {
-                    showNotification("error", e.message || "Failed to save.");
+                  } catch (e: unknown) {
+                    showNotification("error", e instanceof Error ? e.message : "Failed to save.");
                   }
                 }}
                 disabled={saving}
-                className="w-full py-2.5 border border-border text-xs uppercase tracking-wider text-ink-light font-body font-semibold hover:bg-paper-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="w-full py-2.5 border border-border text-xs uppercase tracking-wider text-ink-light font-sans font-semibold hover:bg-paper-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {saving ? (
                   <>
@@ -599,7 +618,7 @@ export default function CategoryStudioPage() {
               {editingId && (
                 <a
                   href="/admin/dashboard?tab=categories"
-                  className="block w-full text-center py-2.5 border border-border text-xs uppercase tracking-wider text-ink-faded font-body font-semibold hover:bg-paper-dark transition-colors"
+                  className="block w-full text-center py-2.5 border border-border text-xs uppercase tracking-wider text-ink-faded font-sans font-semibold hover:bg-paper-dark transition-colors"
                 >
                   Back to Categories
                 </a>
@@ -617,7 +636,7 @@ export default function CategoryStudioPage() {
               if (idx > 0) setStep(steps[idx - 1]);
             }}
             disabled={step === "details"}
-            className="px-3 py-1.5 border border-border text-[10px] uppercase tracking-wider text-ink-light font-body font-semibold hover:bg-paper-dark transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+            className="px-3 py-1.5 border border-border text-[10px] uppercase tracking-wider text-ink-light font-sans font-semibold hover:bg-paper-dark transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
           >
             &larr; Previous
           </button>
@@ -629,7 +648,7 @@ export default function CategoryStudioPage() {
               if (idx < steps.length - 1) setStep(steps[idx + 1]);
             }}
             disabled={step === "publish"}
-            className="px-4 py-1.5 bg-ink text-paper text-[10px] uppercase tracking-wider font-body font-semibold hover:bg-ink-light transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+            className="px-4 py-1.5 bg-ink text-paper text-[10px] uppercase tracking-wider font-sans font-semibold hover:bg-ink-light transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
           >
             Next &rarr;
           </button>
@@ -653,7 +672,7 @@ export default function CategoryStudioPage() {
           <div className="flex items-center gap-3">
             <a
               href="/admin/dashboard?tab=categories"
-              className="text-[10px] uppercase tracking-[0.15em] text-ink-lighter hover:text-ink font-body font-semibold transition-colors"
+              className="text-[10px] uppercase tracking-[0.15em] text-ink-lighter hover:text-ink font-sans font-semibold transition-colors"
             >
               Categories
             </a>
@@ -681,7 +700,7 @@ export default function CategoryStudioPage() {
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 12 }}
-              className={`fixed bottom-4 right-4 z-50 px-4 py-2.5 text-sm font-body flex items-center gap-2 shadow-lg border ${
+              className={`fixed bottom-4 right-4 z-50 px-4 py-2.5 text-sm font-sans flex items-center gap-2 shadow-lg border ${
                 notification.type === "success"
                   ? "bg-emerald-50 text-emerald-800 border-emerald-200"
                   : "bg-red-50 text-red-800 border-red-200"

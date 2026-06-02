@@ -15,10 +15,12 @@ import type { Article } from "@/lib/data";
 import ArticleCard from "@/components/ui/ArticleCard";
 import TrendingSidebar from "@/components/sections/TrendingSidebar";
 import SidebarWidget from "@/components/ui/SidebarWidget";
+import { markSectionAsRead } from "@/lib/notifications";
 
 interface ArticleRow {
   id: string;
   title: string;
+  subheadline: string;
   summary: string;
   content: string;
   category: string;
@@ -27,13 +29,18 @@ interface ArticleRow {
   author_role: string;
   image_url: string;
   thumbnail_url: string;
+  cover_image: string;
+  image_caption: string;
+  image_credit: string;
   published_at: string;
   is_published: boolean;
   featured: boolean;
   trending: boolean;
   editor_pick: boolean;
+  drop_cap: boolean;
   read_time: string;
   is_new: boolean;
+  tags: string;
 }
 
 export default function CategoryPage() {
@@ -50,6 +57,7 @@ export default function CategoryPage() {
       const found = allCats.find((c) => c.slug === slug);
       setCategory(found || null);
     });
+    markSectionAsRead(slug);
   }, [slug]);
 
   useEffect(() => {
@@ -62,25 +70,33 @@ export default function CategoryPage() {
       .eq("is_published", true)
       .order("created_at", { ascending: false })
       .then(({ data }) => {
-        const mapped: Article[] = (data || []).map((row: ArticleRow) => ({
-          id: row.id,
-          title: row.title,
-          summary: row.summary,
-          content: row.content,
-          category: row.category,
-          categorySlug: row.category_slug,
-          imageUrl: row.image_url,
-          thumbnailUrl: row.thumbnail_url || "",
-          author: row.author,
-          authorRole: row.author_role,
-          publishedAt: row.published_at,
-          isPublished: row.is_published,
-          featured: row.featured || false,
-          trending: row.trending || false,
-          editorPick: row.editor_pick || false,
-          readTime: row.read_time,
-          isNew: row.is_new,
-        }));
+        const mapped: Article[] = (data || []).map((row: ArticleRow) => {
+          const imgUrl = row.image_url || row.thumbnail_url || row.cover_image || "";
+          return {
+            id: row.id,
+            title: row.title,
+            subheadline: row.subheadline || "",
+            summary: row.summary,
+            content: row.content,
+            category: row.category,
+            categorySlug: row.category_slug,
+            imageUrl: imgUrl,
+            thumbnailUrl: imgUrl,
+            coverImage: imgUrl,
+            imageCaption: row.image_caption || "",
+            imageCredit: row.image_credit || "",
+            author: row.author,
+            authorRole: row.author_role,
+            publishedAt: row.published_at,
+            isPublished: row.is_published,
+            dropCap: row.drop_cap !== false,
+            featured: false,
+            trending: false,
+            editorPick: false,
+            readTime: row.read_time,
+            tags: row.tags || "",
+          };
+        });
         setArticleList(mapped);
         setLoading(false);
       });
@@ -134,7 +150,7 @@ export default function CategoryPage() {
               </div>
             ) : (
               <div className="text-center py-16 border border-dashed border-border">
-                <p className="text-ink-faded font-body">No articles in this category yet.</p>
+                <p className="text-ink-faded font-sans">No articles in this category yet.</p>
               </div>
             )}
           </div>
@@ -146,7 +162,7 @@ export default function CategoryPage() {
                   <Link
                     key={cat.slug}
                     href={`/category/${cat.slug}`}
-                    className={`block px-2.5 py-1.5 text-sm font-body transition-colors ${
+                    className={`block px-2.5 py-1.5 text-sm font-sans transition-colors ${
                       cat.slug === slug
                         ? "bg-paper-dark text-ink font-semibold border-l-2 border-sepia"
                         : "text-ink-light hover:bg-paper-dark"

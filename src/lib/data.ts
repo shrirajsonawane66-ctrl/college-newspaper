@@ -1,27 +1,58 @@
 export interface Article {
   id: string;
   title: string;
+  subheadline?: string;
   summary: string;
   content: string;
   category: string;
   categorySlug: string;
   imageUrl: string;
   thumbnailUrl: string;
+  coverImage: string;
+  imageCaption?: string;
+  imageCredit?: string;
   author: string;
   authorRole: string;
   publishedAt: string;
+  updatedAt?: string;
   isPublished: boolean;
   featured: boolean;
   trending: boolean;
   editorPick: boolean;
+  dropCap?: boolean;
   readTime: string;
   isNew?: boolean;
+  tags?: string;
+  seoDescription?: string;
+}
+
+export function getArticleImage(article: Article): string {
+  return article.imageUrl || article.thumbnailUrl || article.coverImage || "";
+}
+
+export interface ArticleForm {
+  title: string;
+  subheadline: string;
+  summary: string;
+  content: string;
+  category: string;
+  author: string;
+  author_role: string;
+  image_url: string;
+  image_caption: string;
+  image_credit: string;
+  tags: string;
+  seo_description: string;
+  featured: boolean;
+  trending: boolean;
+  editor_pick: boolean;
+  drop_cap: boolean;
 }
 
 export interface Comment {
   id: string;
   articleId: string;
-  username: string;
+  authorName: string;
   content: string;
   createdAt: string;
   approved: boolean;
@@ -57,6 +88,7 @@ export const articles: Article[] = [
     categorySlug: "announcements",
     imageUrl: "/images/wccbm-logo.png",
     thumbnailUrl: "",
+    coverImage: "",
     author: "WCCBM Times Desk",
     authorRole: "Editorial Board",
     publishedAt: "2026-05-27",
@@ -78,6 +110,7 @@ export const articles: Article[] = [
     categorySlug: "campus-news",
     imageUrl: "/images/wccbm-logo.png",
     thumbnailUrl: "",
+    coverImage: "",
     author: "Shriraj Sonawane",
     authorRole: "Student Correspondent",
     publishedAt: "2026-05-25",
@@ -95,12 +128,13 @@ export const articles: Article[] = [
 <p>The achievement reflects the high standards of academic rigor and the supportive learning environment that WCCBM fosters. Faculty members celebrated the accomplishment, highlighting the student's dedication and hard work.</p>
 <p>"This is a testament to the quality of education at WCCBM and the relentless effort our students put in," said a senior faculty member. "We are incredibly proud of this achievement."</p>
 <p>The student was felicitated at a special ceremony attended by college dignitaries, faculty, and fellow students.</p>`,
-    category: "Achievements",
-    categorySlug: "publicity",
-    imageUrl: "/images/wccbm-logo.png",
-    thumbnailUrl: "",
-    author: "WCCBM Times Desk",
-    authorRole: "Editorial Board",
+      category: "Publicity",
+      categorySlug: "publicity",
+      imageUrl: "/images/wccbm-logo.png",
+      thumbnailUrl: "",
+      coverImage: "",
+      author: "WCCBM Times Desk",
+      authorRole: "Editorial Board",
     publishedAt: "2026-05-22",
     isPublished: true,
     featured: false,
@@ -120,6 +154,7 @@ export const articles: Article[] = [
     categorySlug: "events",
     imageUrl: "/images/wccbm-logo.png",
     thumbnailUrl: "",
+    coverImage: "",
     author: "WCCBM Times Desk",
     authorRole: "Events Coverage",
     publishedAt: "2026-05-20",
@@ -137,11 +172,12 @@ export const articles: Article[] = [
 <p>The hackathon, one of the country's largest, saw participation from thousands of colleges nationwide. WCCBM teams impressed the judges with their technical execution and problem-solving approach.</p>
 <p>"We are thrilled to represent WCCBM at the regional level," said a team leader. "The support from our faculty mentors was instrumental in refining our project."</p>
 <p>The regional finals will be held next month, and the college community is rallying behind its teams. This achievement underscores WCCBM's commitment to fostering innovation and entrepreneurship among students.</p>`,
-    category: "Achievements",
-    categorySlug: "publicity",
-    imageUrl: "/images/wccbm-logo.png",
-    thumbnailUrl: "",
-    author: "Shriraj Sonawane",
+      category: "Publicity",
+      categorySlug: "publicity",
+      imageUrl: "/images/wccbm-logo.png",
+      thumbnailUrl: "",
+      coverImage: "",
+      author: "Shriraj Sonawane",
     authorRole: "Student Correspondent",
     publishedAt: "2026-05-18",
     isPublished: true,
@@ -161,6 +197,7 @@ export const articles: Article[] = [
     categorySlug: "meme",
     imageUrl: "/images/wccbm-logo.png",
     thumbnailUrl: "",
+    coverImage: "",
     author: "WCCBM Meme Bureau",
     authorRole: "Chief Meme Officer",
     publishedAt: "2026-05-27",
@@ -181,6 +218,7 @@ export const articles: Article[] = [
     categorySlug: "meme",
     imageUrl: "/images/wccbm-logo.png",
     thumbnailUrl: "",
+    coverImage: "",
     author: "Shriraj Sonawane",
     authorRole: "Student Correspondent",
     publishedAt: "2026-05-26",

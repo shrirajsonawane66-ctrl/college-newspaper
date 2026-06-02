@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useState, useEffect, useCallback, type ReactNode } from "react";
+import { createContext, useState, useEffect, useCallback, useRef, type ReactNode } from "react";
 import { supabase } from "@/lib/supabase";
 import { getProfile, ensureProfile, type Profile } from "@/lib/auth";
 import type { User, Session } from "@supabase/supabase-js";
@@ -28,12 +28,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const profileCache = useRef<Map<string, Profile>>(new Map());
 
   const fetchAndSetProfile = useCallback(async (userId: string, email: string) => {
-    console.log("[Auth] Fetching profile for user:", userId);
+    const cached = profileCache.current.get(userId);
+    if (cached) {
+      setProfile(cached);
+      return cached;
+    }
     const p = await ensureProfile(userId, email);
-    console.log("[Auth] Profile result:", p);
+    if (p) profileCache.current.set(userId, p);
     setProfile(p);
+    return p;
   }, []);
 
   useEffect(() => {
@@ -41,37 +47,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     supabase.auth.getSession().then(({ data: { session: s } }) => {
       if (!mounted) return;
-
-      console.log("[Auth] Initial session:", s?.user?.email || "none");
-
       setSession(s);
       setUser(s?.user ?? null);
+      setIsLoading(false);
 
       if (s?.user) {
         fetchAndSetProfile(s.user.id, s.user.email || "");
-      } else {
-        setProfile(null);
       }
-
-      setIsLoading(false);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, s) => {
         if (!mounted) return;
-
-        console.log("[Auth] Auth state changed:", _event, s?.user?.email || "none");
-
         setSession(s);
         setUser(s?.user ?? null);
 
         if (s?.user) {
-          await fetchAndSetProfile(s.user.id, s.user.email || "");
+          fetchAndSetProfile(s.user.id, s.user.email || "");
         } else {
           setProfile(null);
         }
-
-        setIsLoading(false);
       }
     );
 
@@ -82,11 +77,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [fetchAndSetProfile]);
 
   const signOut = useCallback(async () => {
-    console.log("[Auth] Signing out");
     await supabase.auth.signOut();
     setUser(null);
     setSession(null);
     setProfile(null);
+    profileCache.current.clear();
   }, []);
 
   const isAdmin = profile?.role === "admin";

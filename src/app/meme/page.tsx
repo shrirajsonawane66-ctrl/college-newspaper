@@ -16,6 +16,7 @@ import TrendingSidebar from "@/components/sections/TrendingSidebar";
 interface ArticleRow {
   id: string;
   title: string;
+  subheadline: string;
   summary: string;
   content: string;
   category: string;
@@ -24,9 +25,14 @@ interface ArticleRow {
   author_role: string;
   image_url: string;
   thumbnail_url: string;
+  cover_image: string;
+  image_caption: string;
+  image_credit: string;
   published_at: string;
   is_published: boolean;
+  drop_cap: boolean;
   read_time: string;
+  tags: string;
 }
 
 export default function MemePage() {
@@ -41,24 +47,33 @@ export default function MemePage() {
       .eq("is_published", true)
       .order("created_at", { ascending: false })
       .then(({ data }) => {
-        const mapped: Article[] = (data || []).map((row: ArticleRow) => ({
-          id: row.id,
-          title: row.title,
-          summary: row.summary,
-          content: row.content,
-          category: row.category,
-          categorySlug: row.category_slug,
-          imageUrl: row.image_url,
-          thumbnailUrl: row.thumbnail_url || "",
-          author: row.author,
-          authorRole: row.author_role,
-          publishedAt: row.published_at,
-          isPublished: row.is_published,
-          featured: false,
-          trending: false,
-          editorPick: false,
-          readTime: row.read_time,
-        }));
+        const mapped: Article[] = (data || []).map((row: ArticleRow) => {
+          const imgUrl = row.image_url || row.thumbnail_url || row.cover_image || "";
+          return {
+            id: row.id,
+            title: row.title,
+            subheadline: row.subheadline || "",
+            summary: row.summary,
+            content: row.content,
+            category: row.category,
+            categorySlug: row.category_slug,
+            imageUrl: imgUrl,
+            thumbnailUrl: imgUrl,
+            coverImage: imgUrl,
+            imageCaption: row.image_caption || "",
+            imageCredit: row.image_credit || "",
+            author: row.author,
+            authorRole: row.author_role,
+            publishedAt: row.published_at,
+            isPublished: row.is_published,
+            dropCap: row.drop_cap !== false,
+            featured: false,
+            trending: false,
+            editorPick: false,
+            readTime: row.read_time,
+            tags: row.tags || "",
+          };
+        });
         setMemeArticles(mapped);
         setLoading(false);
       });
@@ -99,7 +114,7 @@ export default function MemePage() {
               ) : (
                 <div className="text-center py-16 border-2 border-dashed border-border">
                   <Smile className="w-10 h-10 text-ink-faded mx-auto mb-3" />
-                  <p className="text-ink-faded font-body">No memes yet. The fun starts soon!</p>
+                  <p className="text-ink-faded font-sans">No memes yet. The fun starts soon!</p>
                 </div>
               )}
             </div>

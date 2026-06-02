@@ -3,25 +3,22 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { motion } from "framer-motion";
 import BreakingNews from "@/components/layout/BreakingNews";
 import Navbar from "@/components/layout/Navbar";
 import CategoryNav from "@/components/layout/CategoryNav";
 import Footer from "@/components/layout/Footer";
-import NewspaperFoldSection from "@/components/ui/NewspaperFoldSection";
 import { supabase } from "@/lib/supabase";
 import { getArticleThumbnail } from "@/lib/thumbnails";
-import CategoryBadge from "@/components/ui/CategoryBadge";
 import CommentCard from "@/components/ui/CommentCard";
 import CommentForm from "@/components/ui/CommentForm";
 import RelatedArticles from "@/components/ui/RelatedArticles";
-import SidebarWidget from "@/components/ui/SidebarWidget";
-import TrendingSidebar from "@/components/sections/TrendingSidebar";
-import type { Article, Comment } from "@/lib/data";
+import { getArticleImage, type Article, type Comment } from "@/lib/data";
+import { markSectionAsRead } from "@/lib/notifications";
 
 interface ArticleRow {
   id: string;
   title: string;
+  subheadline: string;
   summary: string;
   content: string;
   category: string;
@@ -30,13 +27,19 @@ interface ArticleRow {
   author_role: string;
   image_url: string;
   thumbnail_url: string;
+  cover_image: string;
+  image_caption: string;
+  image_credit: string;
   published_at: string;
+  updated_at: string;
   is_published: boolean;
   featured: boolean;
   trending: boolean;
   editor_pick: boolean;
+  drop_cap: boolean;
   read_time: string;
   is_new: boolean;
+  tags: string;
 }
 
 interface CommentRow {
@@ -61,51 +64,69 @@ export default function ArticlePage() {
 
     Promise.all([
       supabase.from("articles").select("*").eq("id", params.id).single(),
-      supabase.from("articles").select("*").eq("is_published", true).order("created_at", { ascending: false }),
+      supabase.from("articles").select("*").eq("is_published", true).order("created_at", { ascending: false }).limit(10),
     ]).then(([articleRes, allRes]) => {
       if (articleRes.data && !articleRes.error) {
         const row = articleRes.data as ArticleRow;
+        const imgUrl = row.image_url || row.thumbnail_url || row.cover_image || "";
         setArticle({
           id: row.id,
           title: row.title,
+          subheadline: row.subheadline || "",
           summary: row.summary,
           content: row.content,
           category: row.category,
           categorySlug: row.category_slug,
-          imageUrl: row.image_url,
-          thumbnailUrl: row.thumbnail_url || "",
+          imageUrl: imgUrl,
+          thumbnailUrl: imgUrl,
+          coverImage: imgUrl,
+          imageCaption: row.image_caption || "",
+          imageCredit: row.image_credit || "",
           author: row.author,
           authorRole: row.author_role,
           publishedAt: row.published_at,
+          updatedAt: row.updated_at || "",
           isPublished: row.is_published,
           featured: row.featured || false,
           trending: row.trending || false,
           editorPick: row.editor_pick || false,
+          dropCap: row.drop_cap !== false,
           readTime: row.read_time,
           isNew: row.is_new,
+          tags: row.tags || "",
         });
-        console.log('[ArticlePage] Fetched article:', { id: row.id, thumbnailUrl: row.thumbnail_url, imageUrl: row.image_url });
+        markSectionAsRead(row.category_slug);
       }
       if (allRes.data && !allRes.error) {
-        const mapped: Article[] = (allRes.data as ArticleRow[]).map((row) => ({
-          id: row.id,
-          title: row.title,
-          summary: row.summary,
-          content: row.content,
-          category: row.category,
-          categorySlug: row.category_slug,
-          imageUrl: row.image_url,
-          thumbnailUrl: row.thumbnail_url || "",
-          author: row.author,
-          authorRole: row.author_role,
-          publishedAt: row.published_at,
-          isPublished: row.is_published,
-          featured: row.featured || false,
-          trending: row.trending || false,
-          editorPick: row.editor_pick || false,
-          readTime: row.read_time,
-          isNew: row.is_new,
-        }));
+        const mapped: Article[] = (allRes.data as ArticleRow[]).map((row) => {
+          const imgUrl = row.image_url || row.thumbnail_url || row.cover_image || "";
+          return {
+            id: row.id,
+            title: row.title,
+            subheadline: row.subheadline || "",
+            summary: row.summary,
+            content: row.content,
+            category: row.category,
+            categorySlug: row.category_slug,
+            imageUrl: imgUrl,
+            thumbnailUrl: imgUrl,
+            coverImage: imgUrl,
+            imageCaption: row.image_caption || "",
+            imageCredit: row.image_credit || "",
+            author: row.author,
+            authorRole: row.author_role,
+            publishedAt: row.published_at,
+            updatedAt: row.updated_at || "",
+            isPublished: row.is_published,
+            featured: row.featured || false,
+            trending: row.trending || false,
+            editorPick: row.editor_pick || false,
+            dropCap: row.drop_cap !== false,
+            readTime: row.read_time,
+            isNew: row.is_new,
+            tags: row.tags || "",
+          };
+        });
         setAllArticles(mapped);
       }
       setLoading(false);
@@ -124,13 +145,14 @@ export default function ArticlePage() {
       const mapped: Comment[] = (data || []).map((row: CommentRow) => ({
         id: row.id,
         articleId: row.article_id,
-        username: row.author_name,
+        authorName: row.author_name,
         content: row.content,
         createdAt: row.created_at,
-        approved: true,
+        approved: row.approved,
         avatar: row.author_name?.charAt(0).toUpperCase() || "?",
       }));
-      setCommentsList(mapped);
+      const approved = mapped.filter((c) => c.approved);
+      setCommentsList(approved);
     }
   }, [params.id]);
 
@@ -169,112 +191,199 @@ export default function ArticlePage() {
     );
   }
 
+  const imageUrl = getArticleImage(article) || getArticleThumbnail(article.id);
+
   return (
     <>
       <BreakingNews />
       <Navbar />
       <CategoryNav />
-      <main className="newspaper-page">
-        <div className="newspaper-container py-8">
-          <div className="broadsheet-grid">
-            <article className="lead-col">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-              >
-                <Link href="/" className="byline hover:text-ink transition-colors">
-                  &larr; Back to Home
-                </Link>
-
-                <div className="mt-3 flex items-center gap-2">
-                  <CategoryBadge category={article.category} slug={article.categorySlug} size="lg" />
-                  <span className="vintage-stamp">Est. 2026</span>
-                </div>
-
-                <h1 className="mt-4 font-serif font-black text-ink text-3xl sm:text-4xl md:text-5xl lg:text-6xl leading-[1.0] tracking-[-0.01em]">
-                  {article.title}
-                </h1>
-
-                <div className="mt-3 byline-serif">
-                  By <span className="font-semibold not-italic">{article.author}</span> &mdash; {article.authorRole}
-                  <span className="mx-2">&middot;</span>
-                  <span className="dateline">{article.publishedAt}</span>
-                  <span className="mx-2">&middot;</span>
-                  <span className="dateline">{article.readTime}</span>
-                </div>
-
-                <div className="mt-6 paper-curl">
-                  <div className="aspect-[16/9] bg-paper-dark border-2 border-border relative overflow-hidden aged-edge">
-                    <div
-                      className="absolute inset-0 bg-cover bg-center transition-all duration-700 hover:scale-105"
-                      style={{ backgroundImage: `url(${article.thumbnailUrl || article.imageUrl || getArticleThumbnail(article.id)})` }}
-                    />
-                    <div className="absolute bottom-0 left-0 right-0 bg-paper/85 backdrop-blur-sm py-2 px-4 text-[10px] text-ink-faded uppercase tracking-[0.15em] font-body text-right border-t border-border">
-                      WCCBM TIMELINE &mdash; Illustration
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mt-8 border-t-2 border-ink/10 pt-6">
-                  <div
-                    dangerouslySetInnerHTML={{ __html: article.content }}
-                    className="dropcap-editorial article-body multi-col text-ink font-medium font-body"
-                  />
-                </div>
-
-                <div className="newspaper-rule-ink my-10" />
-
-                <div className="space-y-5">
-                  <h2 className="font-serif text-xl font-bold text-ink flex items-center gap-2">
-                    <span className="w-6 h-px bg-sepia/50" />
-                    Comments ({commentsList.length})
-                  </h2>
-                  <CommentForm articleId={article.id} onSuccess={fetchComments} />
-                  <div className="divide-y divide-border">
-                    {commentsList.map((comment) => (
-                      <CommentCard key={comment.id} comment={comment} />
-                    ))}
-                    {commentsList.length === 0 && (
-                      <p className="text-sm text-ink-faded py-3 font-body">
-                        No comments yet. Be the first to share your thoughts.
-                      </p>
-                    )}
-                  </div>
-                </div>
-              </motion.div>
-            </article>
-
-            <aside className="space-y-6 border-l border-border pl-6">
-              <TrendingSidebar articles={allArticles} />
-              <SidebarWidget title="Details">
-                <div className="space-y-2 text-sm font-body">
-                  <div className="flex justify-between py-1.5 border-b border-border">
-                    <span className="text-ink-faded">Author</span>
-                    <span className="font-semibold text-ink">{article.author}</span>
-                  </div>
-                  <div className="flex justify-between py-1.5 border-b border-border">
-                    <span className="text-ink-faded">Category</span>
-                    <span className="font-semibold text-ink">{article.category}</span>
-                  </div>
-                  <div className="flex justify-between py-1.5 border-b border-border">
-                    <span className="text-ink-faded">Published</span>
-                    <span className="font-semibold text-ink">{article.publishedAt}</span>
-                  </div>
-                  <div className="flex justify-between py-1.5">
-                    <span className="text-ink-faded">Read time</span>
-                    <span className="font-semibold text-ink">{article.readTime}</span>
-                  </div>
-                </div>
-              </SidebarWidget>
-            </aside>
+      <main style={{ backgroundColor: '#ffffff', minHeight: '100vh', padding: '40px 0' }}>
+        <article style={{ maxWidth: '740px', margin: '0 auto', padding: '0 24px' }}>
+          <div style={{
+            fontFamily: 'var(--font-sans)',
+            fontSize: '11px',
+            fontWeight: 700,
+            letterSpacing: '0.5px',
+            textTransform: 'uppercase',
+            color: '#a67c3e',
+            marginBottom: '16px',
+          }}>
+            <Link href={`/category/${article.categorySlug}`} style={{ color: '#a67c3e', textDecoration: 'none' }}>
+              {article.category}
+            </Link>
           </div>
 
-          <div className="mt-12 border-t border-border pt-8">
-            <NewspaperFoldSection foldIntensity={0.6}>
-              <RelatedArticles currentId={article.id} category={article.category} articles={allArticles} />
-            </NewspaperFoldSection>
+          <h1 style={{
+            fontFamily: 'var(--font-source-serif)',
+            fontSize: 'clamp(28px, 4vw, 44px)',
+            fontWeight: 600,
+            lineHeight: 1.15,
+            color: '#121212',
+            margin: '0 0 12px',
+          }}>
+            {article.title}
+          </h1>
+
+          {article.subheadline && (
+            <p style={{
+              fontFamily: 'var(--font-source-serif)',
+              fontSize: '18px',
+              lineHeight: 1.4,
+              color: '#555',
+              fontStyle: 'italic',
+              margin: '0 0 16px',
+            }}>
+              {article.subheadline}
+            </p>
+          )}
+
+          <div style={{
+            fontFamily: 'var(--font-sans)',
+            fontSize: '12px',
+            color: '#666',
+            paddingBottom: '16px',
+            marginBottom: '24px',
+            borderBottom: '1px solid #e2e2e2',
+            display: 'flex',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: '8px',
+          }}>
+            By <strong>{article.author}</strong>
+            {article.authorRole && <span style={{ color: '#999' }}> | {article.authorRole}</span>}
+            <span style={{ color: '#999' }}> | </span>
+            <span style={{ color: '#999' }}>
+              {new Date(article.publishedAt).toLocaleDateString('en-US', {
+                weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+              })}
+            </span>
+            <button
+              onClick={() => {
+                window.dispatchEvent(new CustomEvent('nova-read-article', {
+                  detail: {
+                    id: article.id,
+                    title: article.title,
+                    summary: article.summary,
+                    content: article.content,
+                    category: article.category,
+                    author: article.author,
+                  }
+                }))
+              }}
+              style={{
+                marginLeft: 'auto',
+                fontFamily: 'var(--font-sans)',
+                fontSize: '11px',
+                fontWeight: 700,
+                letterSpacing: '0.5px',
+                textTransform: 'uppercase',
+                color: '#a67c3e',
+                background: 'none',
+                border: '1px solid #a67c3e',
+                borderRadius: '4px',
+                padding: '6px 14px',
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                transition: 'background 0.2s ease',
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = '#a67c3e'; e.currentTarget.style.color = '#fff' }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#a67c3e' }}
+              title="Listen to this article with NOVA"
+            >
+              Listen with NOVA
+            </button>
           </div>
+
+          {imageUrl && (
+            <figure style={{ margin: '0 0 32px 0' }}>
+              <img src={imageUrl} alt={article.imageCaption || article.title} loading="lazy" decoding="async"
+                style={{
+                  width: '100%',
+                  height: 'clamp(240px, 50vw, 480px)',
+                  objectFit: 'cover',
+                  display: 'block',
+                }} />
+              {article.imageCaption && (
+                <figcaption style={{
+                  fontFamily: 'var(--font-source-serif)',
+                  fontSize: '13px',
+                  color: '#777',
+                  fontStyle: 'italic',
+                  marginTop: '8px',
+                  paddingLeft: '4px',
+                }}>
+                  {article.imageCaption}
+                  {article.imageCredit && <span> &mdash; Photo: {article.imageCredit}</span>}
+                </figcaption>
+              )}
+            </figure>
+          )}
+
+          <div className="article-body-text"
+            style={{
+              fontFamily: 'var(--font-source-serif)',
+              fontSize: '17px',
+              lineHeight: 1.75,
+              color: '#333',
+            }}
+            dangerouslySetInnerHTML={{ __html: article.content }}
+          />
+
+          <div style={{
+            borderTop: '1px solid #e2e2e2',
+            marginTop: '40px',
+            paddingTop: '32px',
+          }}>
+            <h2 style={{
+              fontFamily: 'var(--font-source-serif)',
+              fontSize: '20px',
+              fontWeight: 700,
+              marginBottom: '16px',
+              color: '#121212',
+            }}>
+              Comments ({commentsList.length})
+            </h2>
+            <CommentForm articleId={article.id} onSuccess={fetchComments} />
+            <div style={{ marginTop: '16px' }}>
+              {commentsList.map((comment) => (
+                <CommentCard key={comment.id} comment={comment} />
+              ))}
+              {commentsList.length === 0 && (
+                <p style={{
+                  fontFamily: 'var(--font-source-serif)',
+                  fontSize: '14px',
+                  color: '#888',
+                  padding: '16px 0',
+                }}>
+                  No comments yet. Be the first to share your thoughts.
+                </p>
+              )}
+            </div>
+          </div>
+        </article>
+
+        <div style={{
+          maxWidth: '1200px',
+          margin: '40px auto 0',
+          padding: '0 16px',
+          borderTop: '1px solid #e2e2e2',
+          paddingTop: '32px',
+        }}>
+          <div style={{
+            fontFamily: 'var(--font-sans)',
+            fontSize: '11px',
+            fontWeight: 700,
+            letterSpacing: '0.5px',
+            textTransform: 'uppercase',
+            color: '#000',
+            marginBottom: '16px',
+          }}>
+            More in {article.category}
+          </div>
+          <RelatedArticles currentId={article.id} category={article.category} articles={allArticles} />
         </div>
       </main>
       <Footer />

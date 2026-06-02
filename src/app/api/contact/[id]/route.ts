@@ -33,13 +33,11 @@ export async function PUT(
       .eq("id", id);
 
     if (error) {
-      console.error("[Contact API] Update error:", error);
       return NextResponse.json({ error: "Failed to update message" }, { status: 500 });
     }
 
     return NextResponse.json({ success: true });
-  } catch (err) {
-    console.error("[Contact API] Error:", err);
+  } catch {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
@@ -61,13 +59,11 @@ export async function DELETE(
       .eq("id", id);
 
     if (error) {
-      console.error("[Contact API] Delete error:", error);
       return NextResponse.json({ error: "Failed to delete message" }, { status: 500 });
     }
 
     return NextResponse.json({ success: true });
-  } catch (err) {
-    console.error("[Contact API] Error:", err);
+  } catch {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

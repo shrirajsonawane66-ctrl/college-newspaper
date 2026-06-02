@@ -2,14 +2,14 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import type { Article } from "@/lib/data";
+import { getArticleImage, type Article } from "@/lib/data";
 import CategoryBadge from "./CategoryBadge";
 import { getArticleThumbnail } from "@/lib/thumbnails";
 import NewLabel from "./NewLabel";
 import { isArticleNew } from "@/hooks/useNewArticles";
 
 function getThumbnailSrc(article: Article): string {
-  return article.thumbnailUrl || article.imageUrl || getArticleThumbnail(article.id);
+  return getArticleImage(article) || getArticleThumbnail(article.id);
 }
 
 export default function ArticleCard({
@@ -38,7 +38,7 @@ export default function ArticleCard({
               {article.title}
             </h3>
             {isArticleNew(article) && <NewLabel />}
-            <div className="mt-0.5 byline">{article.author} &middot; {article.publishedAt}</div>
+            <div className="mt-1 font-sans text-[10px] uppercase tracking-[0.15em] text-ink-lighter font-medium">{article.author} &middot; {article.publishedAt}</div>
           </div>
         </Link>
       </motion.div>
@@ -65,7 +65,7 @@ export default function ArticleCard({
               </h4>
               {isArticleNew(article) && <NewLabel />}
             </div>
-            <span className="text-[9px] text-ink-faded uppercase tracking-[0.1em] font-body">{article.category} &middot; {article.publishedAt}</span>
+            <span className="text-[10px] text-ink-faded uppercase tracking-[0.12em] font-sans font-medium">{article.category} &middot; {article.publishedAt}</span>
           </div>
         </Link>
       </motion.div>
@@ -82,20 +82,20 @@ export default function ArticleCard({
     >
       <Link href={`/article/${article.id}`} className="group block">
         <div
-          className="aspect-[16/9] border border-border mb-2.5 bg-cover bg-center transition-all duration-500 group-hover:border-gold-light group-hover:shadow-md"
+          className="aspect-[16/9] border border-border mb-3 bg-cover bg-center transition-all duration-500 group-hover:border-gold-light group-hover:shadow-md"
           style={{ backgroundImage: `url(${getThumbnailSrc(article)})` }}
         />
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <CategoryBadge category={article.category} slug={article.categorySlug} plain />
           {isArticleNew(article) && <NewLabel />}
         </div>
-        <h3 className="mt-1 font-serif font-bold text-lg text-ink group-hover:text-sepia transition-colors duration-300 leading-snug">
+        <h3 className="mt-1.5 font-serif font-bold text-xl text-ink group-hover:text-sepia transition-colors duration-300 leading-snug">
           {article.title}
         </h3>
-        <p className="mt-1 text-sm text-ink-light leading-relaxed line-clamp-2 font-body group-hover:text-ink transition-colors duration-300">
+        <p className="mt-1.5 text-sm text-ink-light leading-relaxed line-clamp-2 font-body group-hover:text-ink transition-colors duration-300">
           {article.summary}
         </p>
-        <div className="mt-1.5 byline">
+        <div className="mt-2 font-sans text-[11px] uppercase tracking-[0.15em] text-ink-lighter font-medium">
           {article.author} &middot; {article.readTime}
         </div>
       </Link>

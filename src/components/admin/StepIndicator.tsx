@@ -1,7 +1,5 @@
 "use client";
 
-import { motion } from "framer-motion";
-
 interface Step {
   id: string;
   label: string;
@@ -51,32 +49,22 @@ export default function StepIndicator({
                   : "text-zinc-600 cursor-not-allowed"
               }`}
             >
-              {/* Step number */}
               <div className="relative flex items-center justify-center w-6 h-6 mt-0.5 shrink-0">
                 {isPast ? (
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    className="w-full h-full rounded-full bg-gold/80 flex items-center justify-center"
-                  >
+                  <div className="w-full h-full rounded-full bg-gold/80 flex items-center justify-center">
                     <svg className="w-3 h-3 text-ink" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                     </svg>
-                  </motion.div>
+                  </div>
                 ) : isActive ? (
-                  <motion.div
-                    initial={{ scale: 0.8 }}
-                    animate={{ scale: 1 }}
-                    className="w-full h-full rounded-full border-2 border-gold flex items-center justify-center"
-                  >
+                  <div className="w-full h-full rounded-full border-2 border-gold flex items-center justify-center">
                     <span className="text-[10px] font-bold text-gold font-body">{i + 1}</span>
-                  </motion.div>
+                  </div>
                 ) : (
                   <div className="w-full h-full rounded-full border border-zinc-700 flex items-center justify-center">
                     <span className="text-[10px] font-bold text-zinc-600 font-body">{i + 1}</span>
                   </div>
                 )}
-                {/* Connector line */}
                 {i < steps.length - 1 && (
                   <div className={`absolute top-6 left-1/2 -translate-x-1/2 w-px h-6 ${
                     isPast ? "bg-gold/40" : "bg-zinc-800"
@@ -84,7 +72,6 @@ export default function StepIndicator({
                 )}
               </div>
 
-              {/* Label */}
               <div className="min-w-0">
                 <p className={`text-xs font-semibold font-body leading-tight ${
                   isActive ? "text-paper" : isPast ? "text-zinc-300" : "text-zinc-600"
