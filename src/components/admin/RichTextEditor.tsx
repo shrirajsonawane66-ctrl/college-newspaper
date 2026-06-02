@@ -128,7 +128,7 @@ export function RichTextEditor({ content, onChange, placeholder }: RichTextEdito
         <button type="button"
           onClick={() => editor.chain().focus().toggleBlockquote().run()}
           style={btnStyle(editor.isActive('blockquote'))}>
-          " Quote
+          &ldquo; Quote
         </button>
         <button type="button"
           onClick={() => editor.chain().focus().toggleCode().run()}

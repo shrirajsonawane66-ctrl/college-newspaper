@@ -48,7 +48,22 @@ const RSS_SOURCES = [
   },
 ]
 
-function extractImage(item: any): string | null {
+interface RssItem {
+  title?: string;
+  link?: string;
+  pubDate?: string;
+  isoDate?: string;
+  content?: string;
+  'content:encoded'?: string;
+  contentSnippet?: string;
+  mediaContent?: { $: { url: string } };
+  mediaThumbnail?: { $: { url: string } };
+  enclosure?: { url: string };
+  'media:content'?: { $: { url: string } };
+  'media:thumbnail'?: { $: { url: string } };
+}
+
+function extractImage(item: RssItem): string | null {
   if (item.mediaContent?.$.url) return item.mediaContent.$.url
   if (item.mediaThumbnail?.$.url) return item.mediaThumbnail.$.url
   if (item.enclosure?.url) return item.enclosure.url

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 
 const sections = [
@@ -36,6 +36,13 @@ const sections = [
   },
 ];
 
+const particles = Array.from({ length: 20 }, () => ({
+  x: Math.random() * 100,
+  size: Math.random() * 3 + 1,
+  duration: Math.random() * 20 + 10,
+  delay: Math.random() * 15,
+}));
+
 export default function TermsModal() {
   const [mounted, setMounted] = useState(false);
   const [accepted, setAccepted] = useState(false);
@@ -65,15 +72,6 @@ export default function TermsModal() {
   const handleDecline = () => {
     setDeclined(true);
   };
-
-  const particles = useRef(
-    Array.from({ length: 20 }, () => ({
-      x: Math.random() * 100,
-      size: Math.random() * 3 + 1,
-      duration: Math.random() * 20 + 10,
-      delay: Math.random() * 15,
-    }))
-  );
 
   if (!mounted) return null;
   if (accepted) return null;
@@ -135,7 +133,7 @@ export default function TermsModal() {
 
       {/* Dust particles */}
       <div className="absolute inset-0 z-[1] pointer-events-none overflow-hidden">
-        {particles.current.map((p, i) => (
+        {particles.map((p, i) => (
           <motion.div
             key={i}
             className="absolute rounded-full bg-amber-200/20 pointer-events-none"

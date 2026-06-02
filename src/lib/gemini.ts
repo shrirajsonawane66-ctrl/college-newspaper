@@ -32,7 +32,7 @@ function getFallbackModel() {
 
 async function withRetry<T>(
   fn: (model: NonNullable<ReturnType<typeof getGeminiModel>>) => Promise<T>,
-  onFallback?: boolean
+  _onFallback?: boolean
 ): Promise<T> {
   const primary = getGeminiModel()
   if (!primary) throw new Error('No API key configured')
@@ -44,25 +44,26 @@ async function withRetry<T>(
     const m = attempt < 2 ? primary : (getFallbackModel() ?? primary)
     try {
       return await fn(m)
-    } catch (error: any) {
+    } catch (err: unknown) {
       attempt++
+      const apiError = err as { status?: number; message?: string }
 
       const isQuota = (
-        error?.status === 429 ||
-        error?.message?.includes('429') ||
-        error?.message?.includes('quota')
+        apiError?.status === 429 ||
+        apiError?.message?.includes('429') ||
+        apiError?.message?.includes('quota')
       )
 
       if (!isQuota || attempt >= maxAttempts) {
         if (isDev) console.warn(
           isQuota
             ? `Gemini quota exhausted (attempt ${attempt}/${maxAttempts})`
-            : `Gemini API error: ${error?.message ?? error}`
+            : `Gemini API error: ${apiError?.message ?? err}`
         )
-        throw error
+        throw err
       }
 
-      const delay = parseRetryDelay(error) ?? Math.min(1000 * 2 ** attempt, 32000)
+      const delay = parseRetryDelay(err) ?? Math.min(1000 * 2 ** attempt, 32000)
       if (isDev) console.warn(`Gemini quota hit — retrying in ${Math.round(delay / 100) / 10}s (attempt ${attempt}/${maxAttempts})`)
       await sleep(delay)
     }
@@ -71,9 +72,10 @@ async function withRetry<T>(
   throw new Error('Retry exhausted')
 }
 
-function parseRetryDelay(error: any): number | null {
+function parseRetryDelay(error: unknown): number | null {
   try {
-    const match = error.message?.match(/retryDelay["\s:]+(\d+\.?\d*)s/)
+    const err = error as { message?: string }
+    const match = err.message?.match(/retryDelay["\s:]+(\d+\.?\d*)s/)
     if (match) return Math.ceil(parseFloat(match[1]) * 1000) + 500
   } catch {}
   return null

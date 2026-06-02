@@ -20,6 +20,10 @@ const nextConfig: NextConfig = {
       ],
     },
   ],
+  serverExternalPackages: ["@google/generative-ai"],
+  compress: true,
+  poweredByHeader: false,
+  reactStrictMode: true,
 };
 
 export default nextConfig;

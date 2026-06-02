@@ -5,9 +5,33 @@ export type AIState = 'idle' | 'listening' | 'thinking' | 'speaking'
 type StateCallback = (state: AIState) => void
 type TranscriptCallback = (text: string) => void
 
+interface SpeechRecognitionResult {
+  0: { transcript: string }
+  length: number
+}
+
+interface SpeechRecognitionEvent {
+  results: SpeechRecognitionResult[]
+}
+
+interface SpeechRecognitionConstructor {
+  new (): SpeechRecognition
+}
+
+interface SpeechRecognition {
+  continuous: boolean
+  interimResults: boolean
+  lang: string
+  start: () => void
+  stop: () => void
+  onresult: ((event: SpeechRecognitionEvent) => void) | null
+  onend: (() => void) | null
+  onerror: (() => void) | null
+}
+
 export function createSpeechManager() {
   let synthesisState: AIState = 'idle'
-  let recognition: any = null
+  let recognitionInstance: SpeechRecognition | null = null
   let utterance: SpeechSynthesisUtterance | null = null
   const stateListeners: StateCallback[] = []
   const transcriptListeners: TranscriptCallback[] = []
@@ -36,9 +60,11 @@ export function createSpeechManager() {
   const speechSupported = () =>
     typeof window !== 'undefined' && 'speechSynthesis' in window
 
-  const recognitionSupported = () =>
-    typeof window !== 'undefined' &&
-    ('SpeechRecognition' in (window as any) || 'webkitSpeechRecognition' in window)
+  const getSpeechRecognitionAPI = (): SpeechRecognitionConstructor | null => {
+    if (typeof window === 'undefined') return null
+    const w = window as unknown as { SpeechRecognition?: SpeechRecognitionConstructor; webkitSpeechRecognition?: SpeechRecognitionConstructor }
+    return w.SpeechRecognition || w.webkitSpeechRecognition || null
+  }
 
   function speak(text: string) {
     if (!speechSupported()) return
@@ -66,43 +92,42 @@ export function createSpeechManager() {
   }
 
   function startListening() {
-    if (!recognitionSupported()) return
-    stopSpeaking()
-    const SpeechRecognitionAPI = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
+    const SpeechRecognitionAPI = getSpeechRecognitionAPI()
     if (!SpeechRecognitionAPI) return
+    stopSpeaking()
 
-    recognition = new SpeechRecognitionAPI()
-    recognition.continuous = false
-    recognition.interimResults = true
-    recognition.lang = 'en-US'
+    recognitionInstance = new SpeechRecognitionAPI()
+    recognitionInstance.continuous = false
+    recognitionInstance.interimResults = true
+    recognitionInstance.lang = 'en-US'
 
     setState('listening')
 
-    recognition.onresult = (event: any) => {
+    recognitionInstance.onresult = (event: SpeechRecognitionEvent) => {
       const last = event.results.length - 1
       const transcript = event.results[last][0].transcript
       transcriptListeners.forEach((fn) => fn(transcript))
     }
 
-    recognition.onend = () => {
+    recognitionInstance.onend = () => {
       if (synthesisState === 'listening') setState('idle')
     }
 
-    recognition.onerror = () => {
+    recognitionInstance.onerror = () => {
       setState('idle')
     }
 
     try {
-      recognition.start()
+      recognitionInstance.start()
     } catch {
       setState('idle')
     }
   }
 
   function stopListening() {
-    if (recognition) {
-      try { recognition.stop() } catch {}
-      recognition = null
+    if (recognitionInstance) {
+      try { recognitionInstance.stop() } catch {}
+      recognitionInstance = null
     }
     if (synthesisState === 'listening') setState('idle')
   }
@@ -127,7 +152,6 @@ export function createSpeechManager() {
     onTranscript,
     getState,
     speechSupported,
-    recognitionSupported,
     cleanup,
   }
 }

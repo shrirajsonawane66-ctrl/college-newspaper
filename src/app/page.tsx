@@ -233,7 +233,7 @@ export default function Home() {
                 {(() => {
                   const imgUrl = getArticleImage(featured);
                   return imgUrl ? (
-                    <img src={imgUrl} alt={featured.title} loading="eager" decoding="async" fetchpriority="high"
+                    <img src={imgUrl} alt={featured.title} loading="eager" decoding="async" fetchPriority="high"
                       style={{ width: '100%', height: '300px', objectFit: 'cover', display: 'block' }} />
                   ) : null;
                 })()}
