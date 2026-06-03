@@ -7,7 +7,7 @@ import {
   Save, CheckCircle, XCircle, Eye, EyeOff, Star,
   TrendingUp, ArrowUpDown, Search, Pencil, Trash2, Plus,
 } from "lucide-react";
-import { supabase } from "@/lib/supabase";
+import { getSupabase } from "@/lib/supabase";
 import { fetchCategories, invalidateCache, type CategoryItem } from "@/lib/categories";
 import CategoryStepIndicator from "@/components/admin/CategoryStepIndicator";
 import CategoryLivePreview from "@/components/admin/CategoryLivePreview";
@@ -109,12 +109,12 @@ export default function CategoryStudioPage() {
   // Load articles for this category
   useEffect(() => {
     if (authLoading || !editSlug) return;
-    supabase
+    getSupabase()
       .from("articles")
       .select("*")
       .eq("category_slug", editSlug)
       .order("created_at", { ascending: false })
-      .then(({ data }) => {
+      .then(({ data }: { data: ArticleRow[] | null }) => {
         setAllArticles((data as ArticleRow[]) || []);
       });
   }, [authLoading, editSlug]);
@@ -135,8 +135,8 @@ export default function CategoryStudioPage() {
     };
 
     const { error } = editingId
-      ? await supabase.from("categories").update(record).eq("id", editingId)
-      : await supabase.from("categories").insert(record).select();
+      ? await getSupabase().from("categories").update(record).eq("id", editingId)
+      : await getSupabase().from("categories").insert(record).select();
 
     setSaving(false);
     if (error) throw new Error(error.message);
@@ -152,7 +152,7 @@ export default function CategoryStudioPage() {
   };
 
   const toggleArticleFlag = async (id: string, field: string, value: boolean) => {
-    await supabase.from("articles").update({ [field]: value }).eq("id", id);
+    await getSupabase().from("articles").update({ [field]: value }).eq("id", id);
     setAllArticles((prev) =>
       prev.map((a) => (a.id === id ? { ...a, [field]: value } : a))
     );
@@ -160,7 +160,7 @@ export default function CategoryStudioPage() {
 
   const deleteArticle = async (id: string, title: string) => {
     if (!window.confirm(`Delete "${title}"?`)) return;
-    await supabase.from("articles").delete().eq("id", id);
+    await getSupabase().from("articles").delete().eq("id", id);
     setAllArticles((prev) => prev.filter((a) => a.id !== id));
     showNotification("success", "Article deleted.");
   };

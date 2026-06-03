@@ -7,7 +7,7 @@ import Navbar from "@/components/layout/Navbar";
 import Masthead from "@/components/layout/Masthead";
 import CategoryNav from "@/components/layout/CategoryNav";
 import Footer from "@/components/layout/Footer";
-import { supabase } from "@/lib/supabase";
+import { getSupabase } from "@/lib/supabase";
 import type { Article } from "@/lib/data";
 import ArticleCard from "@/components/ui/ArticleCard";
 
@@ -46,7 +46,7 @@ export default function ArchivePage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    supabase
+    getSupabase()
       .from("articles")
       .select("*")
       .eq("is_published", true)

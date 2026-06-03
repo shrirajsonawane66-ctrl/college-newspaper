@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import { fetchCategories, type CategoryItem } from "@/lib/categories";
-import { supabase } from "@/lib/supabase";
+import { getSupabase } from "@/lib/supabase";
 import { hasSectionUnread, markSectionAsRead } from "@/lib/notifications";
 import RedDot from "@/components/ui/RedDot";
 
@@ -19,7 +19,7 @@ export default function CategoryNav() {
   }, []);
 
   useEffect(() => {
-    supabase
+    getSupabase()
       .from("articles")
       .select("category_slug, published_at")
       .eq("is_published", true)

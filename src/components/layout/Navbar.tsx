@@ -5,7 +5,7 @@ import { Menu, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import SearchBar from "./SearchBar";
 import { fetchCategories, type CategoryItem } from "@/lib/categories";
-import { supabase } from "@/lib/supabase";
+import { getSupabase } from "@/lib/supabase";
 import { hasSectionUnread, markSectionAsRead } from "@/lib/notifications";
 import RedDot from "@/components/ui/RedDot";
 
@@ -20,7 +20,7 @@ export default function Navbar() {
   }, []);
 
   useEffect(() => {
-    supabase
+    getSupabase()
       .from("articles")
       .select("category_slug, published_at")
       .eq("is_published", true)

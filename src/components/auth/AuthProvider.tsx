@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useState, useEffect, useCallback, useRef, type ReactNode } from "react";
-import { supabase } from "@/lib/supabase";
+import { getSupabase } from "@/lib/supabase";
 import { getProfile, ensureProfile, type Profile } from "@/lib/auth";
 import type { User, Session } from "@supabase/supabase-js";
 
@@ -45,7 +45,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let mounted = true;
 
-    supabase.auth.getSession().then(({ data: { session: s } }) => {
+    getSupabase().auth.getSession().then(({ data: { session: s } }) => {
       if (!mounted) return;
       setSession(s);
       setUser(s?.user ?? null);
@@ -56,7 +56,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+    const { data: { subscription } } = getSupabase().auth.onAuthStateChange(
       async (_event, s) => {
         if (!mounted) return;
         setSession(s);
@@ -77,7 +77,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [fetchAndSetProfile]);
 
   const signOut = useCallback(async () => {
-    await supabase.auth.signOut();
+    await getSupabase().auth.signOut();
     setUser(null);
     setSession(null);
     setProfile(null);

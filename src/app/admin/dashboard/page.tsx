@@ -8,7 +8,7 @@ import {
   Newspaper, MessageSquare, Check, X,
   FolderTree, ChevronUp, ChevronDown, MailQuestion, Clock,
 } from "lucide-react";
-import { supabase } from "@/lib/supabase";
+import { getSupabase } from "@/lib/supabase";
 import { fetchCategories, invalidateCache, type CategoryItem } from "@/lib/categories";
 import AnalyticsCard from "@/components/ui/AnalyticsCard";
 import { useAuth } from "@/hooks/useAuth";
@@ -115,13 +115,13 @@ function OverviewTab() {
   const [catsLoading, setCatsLoading] = useState(true);
 
   useEffect(() => {
-    supabase.from("articles").select("*").order("created_at", { ascending: false })
+    getSupabase().from("articles").select("*").order("created_at", { ascending: false })
       .then(({ data }) => { setArticles(data as ArticleRow[] || []); setLoading(false); });
-    supabase.from("comments").select("*", { count: "exact", head: true })
+    getSupabase().from("comments").select("*", { count: "exact", head: true })
       .then(({ count }) => { if (count !== null) setCommentsCount(count); });
-    supabase.from("contact_messages").select("*", { count: "exact", head: true })
+    getSupabase().from("contact_messages").select("*", { count: "exact", head: true })
       .then(({ count }) => { if (count !== null) setMessagesCount(count); });
-    supabase.from("contact_messages").select("*", { count: "exact", head: true }).eq("status", "unread")
+    getSupabase().from("contact_messages").select("*", { count: "exact", head: true }).eq("status", "unread")
       .then(({ count }) => { if (count !== null) setUnreadCount(count); });
     fetchCategories().then((cats) => { setCategoriesList(cats); setCatsLoading(false); });
   }, []);
@@ -202,7 +202,7 @@ function ArticlesTab({ searchTerm, setSearchTerm }: { searchTerm: string; setSea
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    supabase.from("articles").select("*").order("created_at", { ascending: false })
+    getSupabase().from("articles").select("*").order("created_at", { ascending: false })
       .then(({ data, error }) => {
         if (!error) setList(data as ArticleRow[] || []);
         setLoading(false);
@@ -210,7 +210,7 @@ function ArticlesTab({ searchTerm, setSearchTerm }: { searchTerm: string; setSea
   }, []);
 
   const refetch = useCallback(() => {
-    supabase.from("articles").select("*").order("created_at", { ascending: false })
+    getSupabase().from("articles").select("*").order("created_at", { ascending: false })
       .then(({ data, error }) => {
         if (!error) setList(data as ArticleRow[] || []);
       });
@@ -218,7 +218,7 @@ function ArticlesTab({ searchTerm, setSearchTerm }: { searchTerm: string; setSea
 
   const handlePublish = async (id: string, isPublished: boolean) => {
     const newPublished = !isPublished;
-    const { error } = await supabase.from("articles").update({
+    const { error } = await getSupabase().from("articles").update({
       is_published: newPublished,
       status: newPublished ? "published" : "draft",
     }).eq("id", id);
@@ -228,7 +228,7 @@ function ArticlesTab({ searchTerm, setSearchTerm }: { searchTerm: string; setSea
 
   const handleDelete = async (id: string, title: string) => {
     if (!window.confirm(`Delete "${title}"? This cannot be undone.`)) return;
-    const { error } = await supabase.from("articles").delete().eq("id", id);
+    const { error } = await getSupabase().from("articles").delete().eq("id", id);
     if (error) showNotification("error", "Delete failed.");
     else { showNotification("success", "Article deleted."); refetch(); }
   };
@@ -315,8 +315,8 @@ function CommentsTab({ searchTerm, setSearchTerm }: { searchTerm: string; setSea
 
   useEffect(() => {
     Promise.all([
-      supabase.from("comments").select("*").order("created_at", { ascending: false }),
-      supabase.from("articles").select("id,title"),
+      getSupabase().from("comments").select("*").order("created_at", { ascending: false }),
+      getSupabase().from("articles").select("id,title"),
     ]).then(([cRes, aRes]) => {
       if (!cRes.error) setList(cRes.data as CommentRow[] || []);
       if (!aRes.error) setArticles(aRes.data as ArticleRow[] || []);
@@ -326,8 +326,8 @@ function CommentsTab({ searchTerm, setSearchTerm }: { searchTerm: string; setSea
 
   const refetch = useCallback(() => {
     Promise.all([
-      supabase.from("comments").select("*").order("created_at", { ascending: false }),
-      supabase.from("articles").select("id,title"),
+      getSupabase().from("comments").select("*").order("created_at", { ascending: false }),
+      getSupabase().from("articles").select("id,title"),
     ]).then(([cRes, aRes]) => {
       if (!cRes.error) setList(cRes.data as CommentRow[] || []);
       if (!aRes.error) setArticles(aRes.data as ArticleRow[] || []);
@@ -337,7 +337,7 @@ function CommentsTab({ searchTerm, setSearchTerm }: { searchTerm: string; setSea
   const articleTitleById = (id: string) => articles.find((a) => a.id === id)?.title || "\u2014";
 
   const saveCommentEdit = async (id: string) => {
-    const { error } = await supabase.from("comments")
+    const { error } = await getSupabase().from("comments")
       .update({ author_name: editForm.author_name, content: editForm.content }).eq("id", id);
     if (error) showNotification("error", "Failed to update comment.");
     else { showNotification("success", "Comment updated."); setEditingId(null); refetch(); }
@@ -345,7 +345,7 @@ function CommentsTab({ searchTerm, setSearchTerm }: { searchTerm: string; setSea
 
   const handleDelete = async (id: string, author: string) => {
     if (!window.confirm(`Delete comment by "${author}"?`)) return;
-    const { error } = await supabase.from("comments").delete().eq("id", id);
+    const { error } = await getSupabase().from("comments").delete().eq("id", id);
     if (error) showNotification("error", "Delete failed.");
     else { showNotification("success", "Comment deleted."); refetch(); }
   };
@@ -454,17 +454,16 @@ function ContactsTab() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   useEffect(() => {
-    supabase
+    getSupabase()
       .from("contact_messages").select("*").order("created_at", { ascending: false })
       .then(({ data, error: err }) => {
         if (err) setError(err.message);
         else setMessages(data || []);
-        setLoading(false);
       });
   }, []);
 
   const refetch = useCallback(() => {
-    supabase
+    getSupabase()
       .from("contact_messages").select("*").order("created_at", { ascending: false })
       .then(({ data, error: err }) => {
         if (err) setError(err.message);
@@ -473,14 +472,14 @@ function ContactsTab() {
   }, []);
 
   const updateStatus = async (id: string, status: string) => {
-    const { error } = await supabase.from("contact_messages").update({ status }).eq("id", id);
+    const { error } = await getSupabase().from("contact_messages").update({ status }).eq("id", id);
     if (error) showNotification("error", "Update failed.");
     else { showNotification("success", `Message marked as ${status}.`); refetch(); }
   };
 
   const deleteMessage = async (id: string, name: string) => {
     if (!window.confirm(`Delete message from "${name}"?`)) return;
-    const { error } = await supabase.from("contact_messages").delete().eq("id", id);
+    const { error } = await getSupabase().from("contact_messages").delete().eq("id", id);
     if (error) showNotification("error", "Delete failed.");
     else { showNotification("success", "Message deleted."); setSelectedId(null); refetch(); }
   };

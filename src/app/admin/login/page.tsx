@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff, KeyRound } from "lucide-react";
 import Link from "next/link";
-import { supabase } from "@/lib/supabase";
+import { getSupabase } from "@/lib/supabase";
 
 export default function AdminLogin() {
   const router = useRouter();
@@ -26,7 +26,7 @@ export default function AdminLogin() {
     setLoading(true);
 
     try {
-      const { data, error: authError } = await supabase.auth.signInWithPassword({ email, password });
+      const { data, error: authError } = await getSupabase().auth.signInWithPassword({ email, password });
 
       if (authError) {
         setError(authError.message || "Invalid email or password.");

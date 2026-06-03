@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { fetchCategories, type CategoryItem } from "@/lib/categories";
-import { supabase } from "@/lib/supabase";
+import { getSupabase } from "@/lib/supabase";
 import RedDot from "@/components/ui/RedDot";
 
 export default function Footer() {
@@ -16,7 +16,7 @@ export default function Footer() {
 
   useEffect(() => {
     const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-    supabase
+    getSupabase()
       .from("articles")
       .select("category_slug")
       .or(`is_new.eq.true,published_at.gte.${twentyFourHoursAgo}`)

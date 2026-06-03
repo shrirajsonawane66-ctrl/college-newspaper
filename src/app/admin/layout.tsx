@@ -7,7 +7,7 @@ import {
   LayoutDashboard, FileText, FolderTree, MessageSquare, LogOut, Eye,
   Sparkles, Newspaper, MailQuestion,
 } from "lucide-react";
-import { supabase } from "@/lib/supabase";
+import { getSupabase } from "@/lib/supabase";
 import { useAuth } from "@/hooks/useAuth";
 
 class AdminLayoutErrorBoundary extends Component<{ children: React.ReactNode }, { hasError: boolean }> {
@@ -70,7 +70,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   // Only fetch unread count once on mount if user is logged in
   useEffect(() => {
     if (!isLoading && user) {
-      supabase
+      getSupabase()
         .from("contact_messages")
         .select("*", { count: "exact", head: true })
         .eq("status", "unread")

@@ -1,4 +1,4 @@
-import { supabase } from "./supabase";
+import { getSupabase } from "./supabase";
 import { categories as fallbackCategories } from "./data";
 
 export interface CategoryItem {
@@ -18,7 +18,7 @@ let cached: { data: CategoryItem[]; timestamp: number } | null = null;
 export async function fetchCategories(): Promise<CategoryItem[]> {
   if (cached && Date.now() - cached.timestamp < CACHE_TTL) return cached.data;
   try {
-    const { data, error } = await supabase
+    const { data, error } = await getSupabase()
       .from("categories")
       .select("*")
       .order("sort_order", { ascending: true });

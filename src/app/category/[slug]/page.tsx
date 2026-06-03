@@ -9,7 +9,7 @@ import Navbar from "@/components/layout/Navbar";
 import Masthead from "@/components/layout/Masthead";
 import CategoryNav from "@/components/layout/CategoryNav";
 import Footer from "@/components/layout/Footer";
-import { supabase } from "@/lib/supabase";
+import { getSupabase } from "@/lib/supabase";
 import { fetchCategories, type CategoryItem } from "@/lib/categories";
 import type { Article } from "@/lib/data";
 import ArticleCard from "@/components/ui/ArticleCard";
@@ -63,7 +63,7 @@ export default function CategoryPage() {
   useEffect(() => {
     if (!slug) return;
     setLoading(true);
-    supabase
+    getSupabase()
       .from("articles")
       .select("*")
       .eq("category_slug", slug)

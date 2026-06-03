@@ -8,7 +8,7 @@ import Navbar from "@/components/layout/Navbar";
 import Masthead from "@/components/layout/Masthead";
 import CategoryNav from "@/components/layout/CategoryNav";
 import Footer from "@/components/layout/Footer";
-import { supabase } from "@/lib/supabase";
+import { getSupabase } from "@/lib/supabase";
 
 export default function ContactPage() {
   const [name, setName] = useState("");
@@ -54,7 +54,7 @@ export default function ContactPage() {
     const payload = { name: name.trim(), email: email.trim(), subject: subject.trim(), message: message.trim() };
 
     try {
-      const { data, error } = await supabase
+      const { data, error } = await getSupabase()
         .from("contact_messages")
         .insert([payload]);
 

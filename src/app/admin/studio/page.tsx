@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import {
   Save, CheckCircle, XCircle, Eye,
 } from "lucide-react";
-import { supabase } from "@/lib/supabase";
+import { getSupabase } from "@/lib/supabase";
 import { useAuth } from "@/hooks/useAuth";
 import StepIndicator from "@/components/admin/StepIndicator";
 import ImageUploader from "@/components/admin/ImageUploader";
@@ -68,7 +68,7 @@ export default function StudioPage() {
     const editId = params.get("edit");
     if (editId) {
       setEditingId(editId);
-      supabase.from("articles").select("*").eq("id", editId).single().then(({ data }) => {
+      getSupabase().from("articles").select("*").eq("id", editId).single().then(({ data }) => {
         if (data) {
           const imgUrl = data.image_url || data.thumbnail_url || data.cover_image || "";
           const loadedForm = {
@@ -142,8 +142,8 @@ export default function StudioPage() {
       };
 
       const { data, error } = eid
-        ? await supabase.from("articles").update(record).eq("id", eid)
-        : await supabase.from("articles").insert(record).select();
+        ? await getSupabase().from("articles").update(record).eq("id", eid)
+        : await getSupabase().from("articles").insert(record).select();
 
       if (!error) {
         if (data && Array.isArray(data) && data.length > 0 && !eid) {
@@ -232,8 +232,8 @@ export default function StudioPage() {
     };
 
     const { error } = editingId
-      ? await supabase.from("articles").update(record).eq("id", editingId)
-      : await supabase.from("articles").insert(record).select();
+      ? await getSupabase().from("articles").update(record).eq("id", editingId)
+      : await getSupabase().from("articles").insert(record).select();
 
     setSaving(false);
 

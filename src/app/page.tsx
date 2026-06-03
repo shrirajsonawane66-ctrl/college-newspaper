@@ -8,7 +8,7 @@ import Masthead from "@/components/layout/Masthead";
 import CategoryNav from "@/components/layout/CategoryNav";
 import NewsTicker from "@/components/layout/NewsTicker";
 import Footer from "@/components/layout/Footer";
-import { supabase } from "@/lib/supabase";
+import { getSupabase } from "@/lib/supabase";
 import { getArticleImage, type Article } from "@/lib/data";
 import { TechNewsSection } from "@/components/sections/TechNewsSection";
 
@@ -56,7 +56,7 @@ export default function Home() {
   useEffect(() => {
     async function fetchData() {
       const [articlesResult, techNewsResult] = await Promise.all([
-        supabase
+        getSupabase()
           .from("articles")
           .select("*")
           .eq("is_published", true)

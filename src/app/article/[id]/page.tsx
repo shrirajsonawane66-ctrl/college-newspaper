@@ -7,7 +7,7 @@ import BreakingNews from "@/components/layout/BreakingNews";
 import Navbar from "@/components/layout/Navbar";
 import CategoryNav from "@/components/layout/CategoryNav";
 import Footer from "@/components/layout/Footer";
-import { supabase } from "@/lib/supabase";
+import { getSupabase } from "@/lib/supabase";
 import { getArticleThumbnail } from "@/lib/thumbnails";
 import CommentCard from "@/components/ui/CommentCard";
 import CommentForm from "@/components/ui/CommentForm";
@@ -63,8 +63,8 @@ export default function ArticlePage() {
     setLoading(true);
 
     Promise.all([
-      supabase.from("articles").select("*").eq("id", params.id).single(),
-      supabase.from("articles").select("*").eq("is_published", true).order("created_at", { ascending: false }).limit(10),
+      getSupabase().from("articles").select("*").eq("id", params.id).single(),
+      getSupabase().from("articles").select("*").eq("is_published", true).order("created_at", { ascending: false }).limit(10),
     ]).then(([articleRes, allRes]) => {
       if (articleRes.data && !articleRes.error) {
         const row = articleRes.data as ArticleRow;
@@ -135,7 +135,7 @@ export default function ArticlePage() {
 
   const fetchComments = useCallback(async () => {
     if (!params.id) return;
-    const { data, error } = await supabase
+    const { data, error } = await getSupabase()
       .from("comments")
       .select("*")
       .eq("article_id", params.id)

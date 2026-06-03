@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Send } from "lucide-react";
-import { supabase } from "@/lib/supabase";
+import { getSupabase } from "@/lib/supabase";
 
 export default function CommentForm({ articleId, onSuccess }: { articleId: string; onSuccess?: () => void }) {
   const [username, setUsername] = useState("");
@@ -26,7 +26,7 @@ export default function CommentForm({ articleId, onSuccess }: { articleId: strin
     try {
       setLoading(true);
 
-      const { error } = await supabase
+      const { error } = await getSupabase()
         .from("comments")
         .insert([
           {

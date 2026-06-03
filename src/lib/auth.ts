@@ -1,4 +1,4 @@
-import { supabase } from './supabase'
+import { getSupabase } from './supabase'
 
 export interface Profile {
   id: string
@@ -9,6 +9,7 @@ export interface Profile {
 }
 
 export async function getProfile(userId: string): Promise<Profile | null> {
+  const supabase = getSupabase()
   const { data, error } = await supabase
     .from('profiles')
     .select('*')
@@ -23,6 +24,7 @@ export async function ensureProfile(userId: string, email: string, name?: string
   const existing = await getProfile(userId)
   if (existing) return existing
 
+  const supabase = getSupabase()
   const { data, error } = await supabase
     .from('profiles')
     .insert({

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { supabase } from "@/lib/supabase";
+import { getSupabase } from "@/lib/supabase";
 import SidebarWidget from "@/components/ui/SidebarWidget";
 
 interface RecentComment {
@@ -14,7 +14,7 @@ export default function RecentCommentsWidget() {
   const [recent, setRecent] = useState<RecentComment[]>([]);
 
   useEffect(() => {
-    supabase
+    getSupabase()
       .from("comments")
       .select("id, author_name, content")
       .eq("approved", true)
