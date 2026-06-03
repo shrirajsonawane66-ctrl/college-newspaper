@@ -1,10 +1,7 @@
-import path from "node:path";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  turbopack: {
-    root: path.join(__dirname),
-  },
+  turbopack: {},
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "**" },
@@ -20,7 +17,6 @@ const nextConfig: NextConfig = {
       ],
     },
   ],
-  serverExternalPackages: ["@google/generative-ai"],
   compress: true,
   poweredByHeader: false,
   reactStrictMode: true,
