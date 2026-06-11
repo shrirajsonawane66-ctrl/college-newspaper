@@ -3,14 +3,14 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
+import { MessageCircle } from "lucide-react";
 import BreakingNews from "@/components/layout/BreakingNews";
 import Navbar from "@/components/layout/Navbar";
 import CategoryNav from "@/components/layout/CategoryNav";
 import Footer from "@/components/layout/Footer";
 import { getSupabase } from "@/lib/supabase";
 import { getArticleThumbnail } from "@/lib/thumbnails";
-import CommentCard from "@/components/ui/CommentCard";
-import CommentForm from "@/components/ui/CommentForm";
+import CommentForm, { CommentCard } from "@/components/ui/CommentForm";
 import RelatedArticles from "@/components/ui/RelatedArticles";
 import { getArticleImage, type Article, type Comment } from "@/lib/data";
 import { markSectionAsRead } from "@/lib/notifications";
@@ -337,26 +337,34 @@ export default function ArticlePage() {
             marginTop: '40px',
             paddingTop: '32px',
           }}>
-            <h2 style={{
-              fontFamily: 'var(--font-source-serif)',
-              fontSize: '20px',
-              fontWeight: 700,
-              marginBottom: '16px',
-              color: '#121212',
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              marginBottom: '24px',
             }}>
-              Comments ({commentsList.length})
-            </h2>
+              <MessageCircle className="w-5 h-5" style={{ color: '#555' }} />
+              <span style={{
+                fontFamily: 'var(--font-sans)',
+                fontSize: '16px',
+                fontWeight: 700,
+                color: '#121212',
+              }}>
+                {commentsList.length} Comment{commentsList.length !== 1 ? 's' : ''}
+              </span>
+            </div>
             <CommentForm articleId={article.id} onSuccess={fetchComments} />
-            <div style={{ marginTop: '16px' }}>
+            <div>
               {commentsList.map((comment) => (
                 <CommentCard key={comment.id} comment={comment} />
               ))}
               {commentsList.length === 0 && (
                 <p style={{
-                  fontFamily: 'var(--font-source-serif)',
+                  fontFamily: 'var(--font-sans)',
                   fontSize: '14px',
                   color: '#888',
-                  padding: '16px 0',
+                  padding: '24px 0',
+                  textAlign: 'center',
                 }}>
                   No comments yet. Be the first to share your thoughts.
                 </p>

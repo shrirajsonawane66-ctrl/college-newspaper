@@ -58,7 +58,7 @@ export default function ImageUploader({ onUploadComplete, onUploadStart, initial
       const fileName = `articles/${Date.now()}-${crypto.randomUUID()}.${ext}`;
 
       const { data, error: uploadError } = await supabase.storage
-        .from("article-images")
+        .from("article-thumbnails")
         .upload(fileName, file, {
           cacheControl: "3600",
           upsert: false,

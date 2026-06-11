@@ -10,7 +10,7 @@ export function getSupabase(): SupabaseClient {
   return createBrowserClient(url, key)
 }
 
-const STORAGE_BUCKET = 'article-images'
+const STORAGE_BUCKET = 'article-thumbnails'
 
 export async function uploadArticleThumbnail(file: File): Promise<string> {
   const supabase = getSupabase()
