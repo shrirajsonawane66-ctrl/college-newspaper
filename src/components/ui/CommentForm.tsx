@@ -29,14 +29,17 @@ export default function CommentForm({ articleId, onSuccess }: { articleId: strin
   const [content, setContent] = useState("");
   const [loading, setLoading] = useState(false);
   const [focused, setFocused] = useState(false);
+  const [posted, setPosted] = useState(false);
+  const [error, setError] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!username.trim() || !content.trim()) return;
+    setError("");
     try {
       setLoading(true);
-      const { error } = await getSupabase()
+      const { error: insertError } = await getSupabase()
         .from("comments")
         .insert([
           {
@@ -46,12 +49,17 @@ export default function CommentForm({ articleId, onSuccess }: { articleId: strin
             approved: true,
           },
         ]);
-      if (error) return;
+      if (insertError) {
+        setError("Failed to post. Check your connection.");
+        return;
+      }
+      setPosted(true);
+      setTimeout(() => setPosted(false), 2000);
       setUsername("");
       setContent("");
-      setFocused(false);
       onSuccess?.();
     } catch {
+      setError("Something went wrong. Try again.");
     } finally {
       setLoading(false);
     }
@@ -88,25 +96,34 @@ export default function CommentForm({ articleId, onSuccess }: { articleId: strin
               animate={{ opacity: 1, y: 0 }}
               className="flex items-center gap-2 mt-2"
             >
-              <button
-                type="submit"
-                disabled={loading || !username.trim() || !content.trim()}
-                className="px-4 py-1.5 bg-ink text-paper text-xs font-semibold font-sans rounded-full hover:bg-ink-light transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-              >
-                {loading ? (
-                  <span className="inline-block w-3 h-3 border border-paper/40 border-t-paper rounded-full animate-spin" />
-                ) : (
-                  "Comment"
-                )}
-              </button>
-              <button
-                type="button"
-                onClick={() => { setFocused(false); setContent(""); }}
-                className="px-4 py-1.5 text-xs font-semibold font-sans text-ink-faded hover:text-ink transition-colors rounded-full hover:bg-paper-dark"
-              >
-                Cancel
-              </button>
+              {posted ? (
+                <span className="text-xs font-semibold font-sans text-emerald-600">Posted!</span>
+              ) : (
+                <>
+                  <button
+                    type="submit"
+                    disabled={loading || !username.trim() || !content.trim()}
+                    className="px-4 py-1.5 bg-ink text-paper text-xs font-semibold font-sans rounded-full hover:bg-ink-light transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    {loading ? (
+                      <span className="inline-block w-3 h-3 border border-paper/40 border-t-paper rounded-full animate-spin" />
+                    ) : (
+                      "Comment"
+                    )}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setFocused(false); setContent(""); setError(""); }}
+                    className="px-4 py-1.5 text-xs font-semibold font-sans text-ink-faded hover:text-ink transition-colors rounded-full hover:bg-paper-dark"
+                  >
+                    Cancel
+                  </button>
+                </>
+              )}
             </motion.div>
+          )}
+          {error && (
+            <p className="text-xs text-red-500 font-sans mt-1">{error}</p>
           )}
         </div>
       </div>

@@ -151,8 +151,7 @@ export default function ArticlePage() {
         approved: row.approved,
         avatar: row.author_name?.charAt(0).toUpperCase() || "?",
       }));
-      const approved = mapped.filter((c) => c.approved);
-      setCommentsList(approved);
+      setCommentsList(mapped);
     }
   }, [params.id]);
 

@@ -38,6 +38,22 @@ CREATE POLICY IF NOT EXISTS "Public read access"
 ON storage.objects FOR SELECT
 USING (bucket_id = 'article-thumbnails');
 
+-- ============================================================
+-- Comments table RLS policies
+-- ============================================================
+
+-- 8. Allow public SELECT on comments (anyone can read)
+ALTER TABLE comments ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY IF NOT EXISTS "Public can view comments"
+ON comments FOR SELECT
+USING (true);
+
+-- 9. Allow public INSERT on comments (anyone can post)
+CREATE POLICY IF NOT EXISTS "Public can insert comments"
+ON comments FOR INSERT
+WITH CHECK (true);
+
 -- 6. Allow authenticated users to upload files
 CREATE POLICY IF NOT EXISTS "Authenticated upload access"
 ON storage.objects FOR INSERT
