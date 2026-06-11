@@ -33,6 +33,7 @@ export default function CommentForm({ articleId, onSuccess }: { articleId: strin
             article_id: articleId,
             author_name: username.trim(),
             content: content.trim(),
+            approved: true,
           },
         ]);
 
