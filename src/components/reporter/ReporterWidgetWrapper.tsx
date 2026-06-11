@@ -1,5 +1,6 @@
 'use client'
 import dynamic from 'next/dynamic'
+import ErrorBoundary from '@/components/ui/ErrorBoundary'
 
 const AIReporterWidget = dynamic(
   () => import('./AIReporterWidget').then((m) => m.AIReporterWidget),
@@ -7,5 +8,9 @@ const AIReporterWidget = dynamic(
 )
 
 export function ReporterWidgetWrapper() {
-  return <AIReporterWidget />
+  return (
+    <ErrorBoundary>
+      <AIReporterWidget />
+    </ErrorBoundary>
+  )
 }
