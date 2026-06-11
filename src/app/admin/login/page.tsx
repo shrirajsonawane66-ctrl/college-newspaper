@@ -84,12 +84,12 @@ export default function AdminLogin() {
             <div className="text-center mb-7">
               <div>
                 <img
-                  src="/images/wccbm-logo.png"
-                  alt="WCCBM"
+                  src="/images/myownlogo.png"
+                  alt="Campus"
                   className="w-16 h-16 mx-auto mb-3 object-contain opacity-90"
                 />
                 <h1 className="font-serif text-[11px] tracking-[0.35em] text-[#2B1D14]/60 font-semibold uppercase">
-                  WCCBM TIMELINE
+                  Campus TIMELINE
                 </h1>
                 <div className="flex items-center justify-center gap-2 my-2.5">
                   <div className="h-px w-8 bg-gradient-to-r from-transparent to-[#B08A4A]/30" />
@@ -124,7 +124,7 @@ export default function AdminLogin() {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="reporter@wccbm.edu.in"
+                    placeholder="reporter@campus.edu.in"
                     required
                     className="w-full px-3.5 py-2.5 text-sm font-serif text-[#2B1D14] bg-[#E7D8BC] border border-[#B08A4A]/25 focus:outline-none transition-all duration-300 placeholder:text-[#2B1D14]/25 focus:border-[#B08A4A]/60 focus:bg-[#E7D8BC] focus:shadow-[inset_0_1px_3px_rgba(176,138,74,0.08)]"
                     style={{ boxShadow: "inset 0 1px 2px rgba(43, 29, 20, 0.06)" }}

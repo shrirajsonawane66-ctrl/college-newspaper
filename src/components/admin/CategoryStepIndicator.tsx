@@ -28,7 +28,7 @@ export default function CategoryStepIndicator({
   return (
     <nav className="w-56 lg:w-64 min-h-screen bg-ink text-zinc-400 flex flex-col shrink-0 border-r border-zinc-800/50">
       <div className="p-5 border-b border-zinc-800">
-        <h3 className="font-serif font-bold text-paper text-lg tracking-tight">WCCBM</h3>
+        <h3 className="font-serif font-bold text-paper text-lg tracking-tight">Campus</h3>
         <p className="text-[8px] uppercase tracking-[0.25em] text-zinc-600 font-body font-semibold">Category Studio</p>
       </div>
 

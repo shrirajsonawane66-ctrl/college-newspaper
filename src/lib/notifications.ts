@@ -1,4 +1,4 @@
-const STORAGE_KEY = 'wccbm_visited_sections'
+const STORAGE_KEY = 'campus_visited_sections'
 
 export function markSectionAsRead(section: string) {
   const visited = getVisitedSections()

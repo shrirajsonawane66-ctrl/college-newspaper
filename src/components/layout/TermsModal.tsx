@@ -12,12 +12,12 @@ const sections = [
   {
     title: "No Unauthorized Copying",
     content:
-      "The content published on WCCBM Timeline is protected under copyright law. Reproduction, redistribution, or repurposing of articles, photographs, or illustrations without explicit written consent is strictly prohibited.",
+      "The content published on Campus Timeline is protected under copyright law. Reproduction, redistribution, or repurposing of articles, photographs, or illustrations without explicit written consent is strictly prohibited.",
   },
   {
     title: "Comment Responsibility",
     content:
-      "Registered users who submit comments retain responsibility for their own words. WCCBM Timeline reserves the right to moderate, edit, or remove comments that violate our standards of discourse.",
+      "Registered users who submit comments retain responsibility for their own words. Campus Timeline reserves the right to moderate, edit, or remove comments that violate our standards of discourse.",
   },
   {
     title: "Privacy Notice",
@@ -27,12 +27,12 @@ const sections = [
   {
     title: "Intellectual Property",
     content:
-      "All trademarks, logos, and brand assets displayed on this site are the property of WCCBM or their respective owners. The name 'WCCBM Timeline' and its associated masthead are protected intellectual property.",
+      "All trademarks, logos, and brand assets displayed on this site are the property of Campus or their respective owners. The name 'Campus Timeline' and its associated masthead are protected intellectual property.",
   },
   {
     title: "Content Accuracy",
     content:
-      "While we strive for factual accuracy in every story, WCCBM Timeline disclaims liability for errors or omissions. Corrections and retractions will be published promptly when errors are brought to our attention.",
+      "While we strive for factual accuracy in every story, Campus Timeline disclaims liability for errors or omissions. Corrections and retractions will be published promptly when errors are brought to our attention.",
   },
 ];
 
@@ -99,7 +99,7 @@ export default function TermsModal() {
               Access Denied
             </h1>
             <p className="text-sm text-[#2B1D14]/70 font-serif leading-relaxed mb-4">
-              You must accept the Press Access Agreement to enter WCCBM Timeline.
+              You must accept the Press Access Agreement to enter Campus Timeline.
             </p>
             <div className="h-px bg-gradient-to-r from-transparent via-[#B08A4A]/30 to-transparent mb-4" />
             <div className="flex flex-col gap-2">
@@ -198,7 +198,7 @@ export default function TermsModal() {
             </h2>
             <div className="mt-2 h-px mx-auto w-12 bg-gradient-to-r from-transparent via-[#B08A4A]/50 to-transparent" />
             <p className="mt-2 text-[11px] text-[#2B1D14]/60 font-serif italic leading-relaxed max-w-sm mx-auto">
-              Before entering WCCBM Timeline, all visitors must acknowledge and accept our publishing policies and newsroom guidelines.
+              Before entering Campus Timeline, all visitors must acknowledge and accept our publishing policies and newsroom guidelines.
             </p>
           </div>
 
@@ -275,7 +275,7 @@ export default function TermsModal() {
           <div className="mt-4 text-center">
             <div className="h-px bg-gradient-to-r from-transparent via-[#B08A4A]/15 to-transparent mb-2" />
             <p className="text-[8px] text-[#2B1D14]/30 font-serif tracking-wider">
-              &copy; 2026 WCCBM Timeline. All Rights Reserved.
+              &copy; 2026 Campus Timeline. All Rights Reserved.
             </p>
           </div>
         </div>

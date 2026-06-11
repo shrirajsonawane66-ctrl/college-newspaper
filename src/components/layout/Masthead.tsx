@@ -19,7 +19,7 @@ export default function Masthead() {
         <div className="py-6 sm:py-8 md:py-10 text-center">
           <Link href="/">
             <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl lg:text-8xl font-black tracking-[-0.02em] text-ink leading-[0.85]">
-              WCCBM
+              Campus
             </h1>
             <h2 className="font-serif text-xl sm:text-2xl md:text-3xl lg:text-5xl tracking-[0.3em] text-sepia font-light mt-1">
               T I M E L I N E

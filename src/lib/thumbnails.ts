@@ -20,7 +20,7 @@ const autonomousSvg = toDataUri(
     <path d="M320 60 L400 40 L480 60" fill="none" stroke="#a67c3e" stroke-width="2.5"/>
     <rect x="340" y="55" width="120" height="30" rx="15" fill="#a67c3e"/>
     <text x="400" y="75" font-family="Georgia, serif" font-size="11" fill="#f2ede4" text-anchor="middle" font-weight="bold">AUTONOMOUS</text>
-    <text x="400" y="175" font-family="Georgia, serif" font-size="22" fill="#1c1512" text-anchor="middle" font-weight="bold">WCCBM</text>
+    <text x="400" y="175" font-family="Georgia, serif" font-size="22" fill="#1c1512" text-anchor="middle" font-weight="bold">Campus</text>
     <text x="400" y="205" font-family="Georgia, serif" font-size="14" fill="#3a3028" text-anchor="middle">A New Era of</text>
     <text x="400" y="225" font-family="Georgia, serif" font-size="14" fill="#3a3028" text-anchor="middle">Academic Excellence</text>
     <line x1="300" y1="250" x2="500" y2="250" stroke="#d4c9b8" stroke-width="1"/>
@@ -128,7 +128,7 @@ const genericSvg = toDataUri(
     <rect width="800" height="450" fill="#f2ede4"/>
     <rect x="200" y="100" width="400" height="250" rx="4" fill="none" stroke="#d4c9b8" stroke-width="1"/>
     <rect x="220" y="120" width="360" height="210" fill="#f7f3ec"/>
-    <text x="400" y="210" font-family="Georgia, serif" font-size="16" fill="#8b6f4e" text-anchor="middle">WCCBM TIMELINE</text>
+    <text x="400" y="210" font-family="Georgia, serif" font-size="16" fill="#8b6f4e" text-anchor="middle">Campus TIMELINE</text>
     <text x="400" y="240" font-family="Georgia, serif" font-size="11" fill="#3a3028" text-anchor="middle">College Newspaper</text>
     <line x1="300" y1="260" x2="500" y2="260" stroke="#d4c9b8" stroke-width="1"/>
     <rect x="140" y="80" width="520" height="290" rx="4" fill="none" stroke="#d4c9b8" stroke-width="1" stroke-dasharray="4,4"/>

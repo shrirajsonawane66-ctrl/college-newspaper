@@ -93,10 +93,10 @@ export default function MemePage() {
           </div>
           <div className="newspaper-rule-thick max-w-[60px] mb-1" />
           <h1 className="font-serif text-3xl sm:text-4xl font-black text-ink tracking-tight leading-[1.05]">
-            WCCBM Memes
+            Campus Memes
           </h1>
           <p className="byline-serif mt-1">
-            The lighter side of campus life &mdash; relatable, hilarious, and 100% WCCBM.
+            The lighter side of campus life &mdash; relatable, hilarious, and 100% Campus.
           </p>
 
           <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-8">

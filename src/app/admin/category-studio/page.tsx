@@ -368,7 +368,7 @@ export default function CategoryStudioPage() {
                   type="text"
                   value={form.seo_title}
                   onChange={(e) => updateForm("seo_title", e.target.value)}
-                  placeholder={`${form.name || "Section Name"} — WCCBM TIMELINE`}
+                  placeholder={`${form.name || "Section Name"} — Campus TIMELINE`}
                   className="w-full px-3 py-2 text-sm border border-border bg-paper focus:outline-none font-body placeholder:text-ink-faded/40 transition-all duration-200 focus:border-gold-light/50"
                 />
               </div>

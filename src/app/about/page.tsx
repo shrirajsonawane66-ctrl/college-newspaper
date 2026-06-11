@@ -13,7 +13,7 @@ import Masthead from "@/components/layout/Masthead";
 import CategoryNav from "@/components/layout/CategoryNav";
 import Footer from "@/components/layout/Footer";
 
-const titleWords = ["The", "Mind", "Behind", "WCCBM", "Timeline"];
+const titleWords = ["The", "Mind", "Behind", "Campus", "Timeline"];
 
 const staggerContainer = {
   hidden: {},
@@ -171,7 +171,7 @@ export default function AboutPage() {
                 className="space-y-4 text-sm sm:text-base text-ink-light leading-[1.8] font-body"
               >
                 <motion.p variants={fadeUp}>
-                  Shriraj Sonawane is a <strong className="text-ink font-serif">Data Science</strong> student at WCCBM with a{" "}
+                  Shriraj Sonawane is a <strong className="text-ink font-serif">Data Science</strong> student at Campus with a{" "}
                   <strong className="text-ink font-serif">9.4 CGPA</strong> — driven by a relentless curiosity for how technology
                   shapes our world. As a{" "}
                   <strong className="text-ink font-serif">Full Stack Developer</strong>, he builds end-to-end web
@@ -184,7 +184,7 @@ export default function AboutPage() {
                   machine learning pipelines — each one a step toward mastery.
                 </motion.p>
                 <motion.p variants={fadeUp}>
-                  Beyond code, he believes in the power of storytelling. At WCCBM TIMELINE, he merges his technical
+                  Beyond code, he believes in the power of storytelling. At Campus TIMELINE, he merges his technical
                   perspective with editorial craftsmanship to create a newspaper that is both informative and
                   visually compelling.
                 </motion.p>
@@ -249,7 +249,7 @@ export default function AboutPage() {
                       </div>
                       <div className="flex items-center gap-2">
                         <Mail className="w-3 h-3 text-ink-faded shrink-0" />
-                        <span>shriraj@wccbm.edu.in</span>
+                        <span>shriraj@campus.edu.in</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <Target className="w-3 h-3 text-ink-faded shrink-0" />
@@ -365,7 +365,7 @@ export default function AboutPage() {
         <AnimatedSection className="py-6 sm:py-10">
           <div className="bg-ink text-paper/80 p-6 sm:p-8 md:p-10 relative overflow-hidden">
             <div className="absolute inset-0 opacity-[0.03] bg-cover bg-center pointer-events-none"
-              style={{ backgroundImage: "url(/images/wccbm-logo.png)" }}
+              style={{ backgroundImage: "url(/images/myownlogo.png)" }}
             />
             <div className="absolute top-0 right-0 w-48 h-48 bg-paper/[0.02] rounded-full -mr-24 -mt-24" />
             <div className="absolute bottom-0 left-0 w-32 h-32 bg-gold/[0.03] rounded-full -ml-16 -mb-16" />

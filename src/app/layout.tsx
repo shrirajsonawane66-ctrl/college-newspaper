@@ -26,8 +26,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "WCCBM TIMELINE — The Official College Newspaper",
-  description: "The official student newspaper of WCCBM — bringing you campus news, announcements, achievements, and events since 2026.",
+  title: "Campus TIMELINE — The Official College Newspaper",
+  description: "The official student newspaper of Campus — bringing you campus news, announcements, achievements, and events since 2026.",
 };
 
 export const viewport = {

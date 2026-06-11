@@ -36,13 +36,13 @@ export default function Footer() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           <div>
             <h3 className="font-serif text-2xl font-bold tracking-[0.05em] text-paper mb-1">
-              WCCBM
+              Campus
             </h3>
             <h4 className="font-serif text-sm tracking-[0.3em] text-ink-faded/60 mb-3 font-light">
               T I M E L I N E
             </h4>
             <p className="text-sm leading-relaxed text-ink-faded/75 font-body">
-              The official student newspaper of WCCBM. Bringing you campus news,
+              The official student newspaper of Campus. Bringing you campus news,
               announcements, achievements, and stories since 2026.
             </p>
           </div>
@@ -82,10 +82,10 @@ export default function Footer() {
           <div>
             <h4 className="font-sans text-xs uppercase tracking-[0.18em] text-paper/60 mb-3 font-semibold">Contact</h4>
             <ul className="space-y-2 text-sm text-ink-faded/75 font-body">
-              <li>WCCBM Campus, College Road, Nashik</li>
+              <li>Campus Campus, College Road, Nashik</li>
               <li>
-                <a href="mailto:timeline@wccbm.edu.in" className="hover:text-paper transition-colors">
-                  timeline@wccbm.edu.in
+                <a href="mailto:timeline@campus.edu.in" className="hover:text-paper transition-colors">
+                  timeline@campus.edu.in
                 </a>
               </li>
               <li>+91 123-456-7890</li>
@@ -99,7 +99,7 @@ export default function Footer() {
         </div>
         <div className="flex flex-col sm:flex-row items-center justify-between gap-2">
           <p className="text-xs text-ink-faded/60 font-body">
-            &copy; {new Date().getFullYear()} WCCBM TIMELINE. All rights reserved.
+            &copy; {new Date().getFullYear()} Campus TIMELINE. All rights reserved.
           </p>
           <p className="text-[10px] uppercase tracking-[0.2em] text-ink-faded/50 font-body font-semibold">
             Printed in the spirit of independent campus journalism

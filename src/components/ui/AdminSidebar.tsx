@@ -18,7 +18,7 @@ export default function AdminSidebar() {
     <aside className="w-64 min-h-screen bg-ink text-zinc-400 flex flex-col shrink-0">
       <div className="p-5 border-b border-zinc-800">
         <Link href="/admin/dashboard">
-          <h3 className="font-serif font-bold text-paper text-lg tracking-tight">WCCBM</h3>
+          <h3 className="font-serif font-bold text-paper text-lg tracking-tight">Campus</h3>
           <p className="text-[8px] uppercase tracking-[0.25em] text-zinc-600 font-body font-semibold">Timeline Admin</p>
         </Link>
       </div>

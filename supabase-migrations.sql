@@ -1,5 +1,5 @@
 -- ============================================================
--- WCCBM TIMELINE — Supabase Schema Fixes
+-- Campus TIMELINE — Supabase Schema Fixes
 -- Run this in Supabase Dashboard → SQL Editor
 -- ============================================================
 

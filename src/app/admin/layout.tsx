@@ -124,7 +124,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <aside className={`fixed lg:sticky top-0 left-0 z-30 w-56 lg:w-64 min-h-screen bg-ink text-zinc-400 flex flex-col shrink-0 transition-transform duration-200 ${sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}>
           <div className="p-4 lg:p-5 border-b border-zinc-800">
             <Link href="/admin/dashboard" className="block">
-              <h3 className="font-serif font-bold text-paper text-xl tracking-tight">WCCBM</h3>
+              <h3 className="font-serif font-bold text-paper text-xl tracking-tight">Campus</h3>
               <p className="text-[10px] uppercase tracking-[0.25em] text-zinc-500 font-sans font-semibold">Timeline Admin</p>
             </Link>
           </div>
@@ -191,7 +191,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <Newspaper className="w-5 h-5" />
             </button>
             <Link href="/admin/dashboard" className="font-serif font-bold text-ink text-base tracking-tight">
-              WCCBM Admin
+              Campus Admin
             </Link>
             <div className="w-8" />
           </div>

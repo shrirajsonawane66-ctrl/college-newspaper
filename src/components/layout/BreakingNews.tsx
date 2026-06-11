@@ -3,10 +3,10 @@
 import Link from "next/link";
 
 const tickerItems = [
-  "WCCBM TIMELINE — The Official Student Newspaper",
-  "Breaking: WCCBM Campus News • Live Updates",
+  "Campus TIMELINE — The Official Student Newspaper",
+  "Breaking: Campus Campus News • Live Updates",
   "Printed in the Spirit of Independent Campus Journalism",
-  "Est. 2026 • Serving the WCCBM Community",
+  "Est. 2026 • Serving the Campus Community",
 ];
 
 export default function BreakingNews() {

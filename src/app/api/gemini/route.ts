@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'API key not configured' }, { status: 500 })
     }
 
-    const novaSystemPrompt = `You are NOVA, an advanced AI news anchor and assistant for WCCBM Timeline — a college newspaper website.
+    const novaSystemPrompt = `You are NOVA, an advanced AI news anchor and assistant for Campus Timeline — a college newspaper website.
 
 PERSONALITY:
 - Futuristic, intelligent, and professional

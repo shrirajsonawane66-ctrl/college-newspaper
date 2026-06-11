@@ -412,7 +412,7 @@ export default function StudioPage() {
                   type="text"
                   value={form.image_credit}
                   onChange={(e) => updateForm("image_credit", e.target.value)}
-                  placeholder="Photo by Author Name / WCCBM"
+                  placeholder="Photo by Author Name / Campus"
                   className="w-full px-3 py-2.5 text-base border border-border bg-paper focus:outline-none font-body text-ink placeholder:text-ink-faded/50 transition-all duration-200 focus:border-gold/60"
                 />
               </div>
@@ -533,7 +533,7 @@ export default function StudioPage() {
           <div className="border-2 border-ink/15 bg-paper-dark overflow-hidden">
             <div className="px-4 sm:px-6 pt-4 pb-2 text-center border-b border-border">
               <p className="text-[9px] uppercase tracking-[0.2em] text-ink-faded font-sans font-semibold">
-                WCCBM TIMELINE &mdash; Article Preview
+                Campus TIMELINE &mdash; Article Preview
               </p>
               <div className="newspaper-rule-thick max-w-[60px] mx-auto mt-1" />
             </div>

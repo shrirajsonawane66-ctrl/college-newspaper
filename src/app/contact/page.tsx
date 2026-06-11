@@ -223,7 +223,7 @@ export default function ContactPage() {
                             type="email"
                             value={email}
                             onChange={(e) => { setEmail(e.target.value); if (errors.email) setErrors((prev) => { const n = { ...prev }; delete n.email; return n; }); }}
-                            placeholder="john@wccbm.edu.in"
+                            placeholder="john@campus.edu.in"
                             className="w-full px-3 py-2.5 text-sm border border-border bg-paper focus:outline-none font-body placeholder:text-ink-faded/40 transition-all duration-200 focus:border-gold-light/50"
                           />
                           {errors.email && <p className="text-[10px] text-red-500 font-sans">{errors.email}</p>}
@@ -299,11 +299,11 @@ export default function ContactPage() {
                   <div className="space-y-3.5 text-sm text-ink-light font-body">
                     <div className="flex items-start gap-3">
                     <MapPin className="w-4 h-4 mt-0.5 shrink-0 text-ink-faded" />
-                    <span className="leading-relaxed">WCCBM Campus, College Road, Nashik, Maharashtra, India</span>
+                    <span className="leading-relaxed">Campus Campus, College Road, Nashik, Maharashtra, India</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <Mail className="w-4 h-4 shrink-0 text-ink-faded" />
-                    <a href="mailto:timeline@wccbm.edu.in" className="vintage-link text-sm">timeline@wccbm.edu.in</a>
+                    <a href="mailto:timeline@campus.edu.in" className="vintage-link text-sm">timeline@campus.edu.in</a>
                   </div>
                   <div className="flex items-center gap-3">
                     <Phone className="w-4 h-4 shrink-0 text-ink-faded" />
@@ -323,7 +323,7 @@ export default function ContactPage() {
                 className="bg-ink text-paper/80 p-5 relative overflow-hidden aged-edge"
               >
                 <div className="absolute inset-0 opacity-[0.04] bg-cover bg-center pointer-events-none"
-                  style={{ backgroundImage: "url(/images/wccbm-logo.png)" }}
+                  style={{ backgroundImage: "url(/images/myownlogo.png)" }}
                 />
                 <div className="relative z-10">
                   <div className="w-8 h-8 border border-paper/20 flex items-center justify-center mb-3">
@@ -334,8 +334,8 @@ export default function ContactPage() {
                     Have a news tip, campus scoop, or story idea? Our editors are always looking for the next big story.
                   </p>
                   <div className="newspaper-rule-thick max-w-[30px] opacity-20 my-3" />
-                  <a href="mailto:timeline@wccbm.edu.in" className="inline-flex items-center gap-1 text-sm text-sepia-light hover:text-sepia transition-colors font-semibold font-sans group">
-                    timeline@wccbm.edu.in
+                  <a href="mailto:timeline@campus.edu.in" className="inline-flex items-center gap-1 text-sm text-sepia-light hover:text-sepia transition-colors font-semibold font-sans group">
+                    timeline@campus.edu.in
                     <span className="transition-transform duration-300 group-hover:translate-x-1">&rarr;</span>
                   </a>
                 </div>

@@ -72,7 +72,7 @@ export default function Navbar() {
               href="/"
               className="font-serif text-base sm:text-lg font-bold tracking-[0.15em] text-ink uppercase leading-none"
             >
-              WCCBM Timeline
+              Campus Timeline
             </Link>
             <span className="hidden sm:inline w-px h-4 bg-border/60" />
             <Link
