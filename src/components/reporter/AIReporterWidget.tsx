@@ -1,10 +1,24 @@
 'use client'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Mic, MicOff } from 'lucide-react'
-import { generateNovaResponse, type ArticleContext } from '@/lib/gemini'
+import type { ArticleContext } from '@/lib/gemini'
 import { createSpeechManager, type AIState } from '@/lib/speech'
 import { ReporterCanvas } from './ReporterCanvas'
 import { ReporterWaveform } from './ReporterWaveform'
+
+async function fetchGemini(message: string, articleContext?: ArticleContext): Promise<string> {
+  try {
+    const res = await fetch('/api/gemini', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message, articleContext }),
+    })
+    const data = await res.json()
+    return data.reply || '...'
+  } catch {
+    return "I'm sorry, my AI service is temporarily unavailable due to high demand. Please try again in a minute."
+  }
+}
 
 type Message = {
   role: 'user' | 'nova'
@@ -27,7 +41,7 @@ export function AIReporterWidget() {
     setAiState('thinking')
     setMessages((current) => [...current.slice(-3), { role: 'user', text }])
 
-    const reply = await generateNovaResponse(text)
+    const reply = await fetchGemini(text)
     setMessages((current) => [...current.slice(-4), { role: 'nova', text: reply }])
     speech.speak(reply)
   }, [speech])
@@ -62,7 +76,7 @@ export function AIReporterWidget() {
         content: detail.content,
         source: detail.category,
       }
-      generateNovaResponse(`Read this article aloud for me: ${detail.title}`, ctx).then((reply) => {
+      fetchGemini(`Read this article aloud for me: ${detail.title}`, ctx).then((reply) => {
         setMessages((current) => [...current.slice(-4), { role: 'nova', text: reply }])
         speech.speak(reply)
       }).catch(() => {})

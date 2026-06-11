@@ -30,6 +30,12 @@ export const metadata: Metadata = {
   description: "The official student newspaper of WCCBM — bringing you campus news, announcements, achievements, and events since 2026.",
 };
 
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{

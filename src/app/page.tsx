@@ -188,10 +188,7 @@ export default function Home() {
             Top Stories
           </div>
 
-          <div className="nyt-grid" style={{
-            display: 'grid',
-            gridTemplateColumns: '1fr 2px 2fr 2px 1fr',
-          }}>
+          <div className="nyt-grid">
             <div style={{ padding: '20px 16px 20px 0' }}>
               {secondary.map((article) => {
                 const imgUrl = getArticleImage(article);

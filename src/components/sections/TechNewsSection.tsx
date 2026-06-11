@@ -316,7 +316,7 @@ export function TechNewsSection({
         </div>
       </div>
 
-      <div style={{
+      <div className="main-grid" style={{
         display: 'grid',
         gridTemplateColumns: '1.5fr 1fr',
         gap: '0',
@@ -344,7 +344,7 @@ export function TechNewsSection({
       </div>
 
       {gridStories.length > 0 && (
-        <div style={{
+        <div className="four-col" style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(4, 1fr)',
           gap: '0',
@@ -418,7 +418,7 @@ export function TechNewsSection({
       )}
 
       {listStories.length > 0 && (
-        <div style={{
+        <div className="three-col" style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(3, 1fr)',
           gap: '0',

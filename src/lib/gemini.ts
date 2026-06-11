@@ -1,6 +1,6 @@
 import { GoogleGenerativeAI } from '@google/generative-ai'
 
-const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY
+const apiKey = process.env.GEMINI_API_KEY
 
 let genAI: GoogleGenerativeAI | null = null
 let model: ReturnType<GoogleGenerativeAI['getGenerativeModel']> | null = null
