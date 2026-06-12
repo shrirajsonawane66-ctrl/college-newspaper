@@ -48,6 +48,10 @@ export const metadata: Metadata = {
     follow: true,
   },
   keywords: ["college newspaper", "campus news", "student newspaper", "Campus", "student journalism"],
+  icons: {
+    icon: "/favicon.ico",
+    apple: "/favicon.ico",
+  },
 };
 
 export const viewport = {
