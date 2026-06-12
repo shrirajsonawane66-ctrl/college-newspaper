@@ -28,15 +28,15 @@ NOTIFY pgrst, 'reload schema';
 -- Storage bucket configuration
 -- ============================================================
 
--- 4. Create or update the article-thumbnails bucket
+-- 4. Create or update the article-images bucket
 INSERT INTO storage.buckets (id, name, public)
-VALUES ('article-thumbnails', 'article-thumbnails', true)
+VALUES ('article-images', 'article-images', true)
 ON CONFLICT (id) DO UPDATE SET public = true;
 
 -- 5. Allow public read access to all files in the bucket
-CREATE POLICY IF NOT EXISTS "Public read access"
+CREATE POLICY IF NOT EXISTS "Public read access article-images"
 ON storage.objects FOR SELECT
-USING (bucket_id = 'article-thumbnails');
+USING (bucket_id = 'article-images');
 
 -- ============================================================
 -- Comments table RLS policies
@@ -55,13 +55,13 @@ ON comments FOR INSERT
 WITH CHECK (true);
 
 -- 6. Allow authenticated users to upload files
-CREATE POLICY IF NOT EXISTS "Authenticated upload access"
+CREATE POLICY IF NOT EXISTS "Authenticated upload access article-images"
 ON storage.objects FOR INSERT
 TO authenticated
-WITH CHECK (bucket_id = 'article-thumbnails');
+WITH CHECK (bucket_id = 'article-images');
 
 -- 7. Allow authenticated users to delete their uploads
-CREATE POLICY IF NOT EXISTS "Authenticated delete access"
+CREATE POLICY IF NOT EXISTS "Authenticated delete access article-images"
 ON storage.objects FOR DELETE
 TO authenticated
-USING (bucket_id = 'article-thumbnails');
+USING (bucket_id = 'article-images');

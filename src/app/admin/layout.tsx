@@ -50,7 +50,7 @@ const navItems = [
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { isLoading, user, isAdmin, signOut } = useAuth();
+  const { isLoading, user, signOut } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const hasRedirected = useRef(false);
@@ -64,13 +64,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     if (!isLoading && !user && pathname !== "/admin/login") {
       hasRedirected.current = true;
       router.replace("/admin/login");
-      return;
     }
-    if (!isLoading && user && !isAdmin && pathname !== "/admin/login") {
-      hasRedirected.current = true;
-      router.replace("/admin/login");
-    }
-  }, [isLoading, user, isAdmin, pathname, router]);
+  }, [isLoading, user, pathname, router]);
 
   // Only fetch unread count once on mount if user is logged in
   useEffect(() => {

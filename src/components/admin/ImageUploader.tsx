@@ -4,6 +4,8 @@ import { useState, useCallback, useRef, useEffect } from "react";
 import { Upload, CheckCircle, XCircle, Link as LinkIcon } from "lucide-react";
 import { getSupabase } from "@/lib/supabase";
 
+const STORAGE_BUCKET = "article-images";
+
 interface ImageUploaderProps {
   onUploadComplete: (publicUrl: string) => void;
   onUploadStart?: () => void;
@@ -57,8 +59,10 @@ export default function ImageUploader({ onUploadComplete, onUploadStart, initial
       const ext = file.name.split(".").pop();
       const fileName = `articles/${Date.now()}-${crypto.randomUUID()}.${ext}`;
 
+      console.log(`[ImageUploader] Uploading to bucket "${STORAGE_BUCKET}" path "${fileName}"`);
+
       const { data, error: uploadError } = await supabase.storage
-        .from("article-thumbnails")
+        .from(STORAGE_BUCKET)
         .upload(fileName, file, {
           cacheControl: "3600",
           upsert: false,
@@ -67,26 +71,42 @@ export default function ImageUploader({ onUploadComplete, onUploadStart, initial
       if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
 
       if (uploadError) {
+        console.error("[ImageUploader] Upload error:", uploadError);
         setError(`Upload failed: ${uploadError.message}`);
         setUploading(false);
         setProgress(0);
+        if (blobUrlRef.current) {
+          URL.revokeObjectURL(blobUrlRef.current);
+          blobUrlRef.current = null;
+        }
+        setPreview("");
         return;
       }
 
+      console.log("[ImageUploader] Upload result:", data);
+
       const {
         data: { publicUrl },
-      } = supabase.storage.from("article-thumbnails").getPublicUrl(data.path);
+      } = supabase.storage.from(STORAGE_BUCKET).getPublicUrl(data.path);
+
+      console.log("[ImageUploader] Public URL generated:", publicUrl);
 
       setProgress(100);
       setPreview(publicUrl);
       setUrlInput(publicUrl);
       setUploading(false);
       onUploadComplete(publicUrl);
-    } catch {
+    } catch (err) {
+      console.error("[ImageUploader] Unexpected upload error:", err);
       if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
       setError("Upload failed. Please try again.");
       setUploading(false);
       setProgress(0);
+      if (blobUrlRef.current) {
+        URL.revokeObjectURL(blobUrlRef.current);
+        blobUrlRef.current = null;
+      }
+      setPreview("");
     }
   }, [onUploadComplete, onUploadStart]);
 
@@ -223,9 +243,9 @@ export default function ImageUploader({ onUploadComplete, onUploadStart, initial
       )}
 
       {error && (
-        <div className="flex items-center gap-1.5 text-[11px] text-red-600">
-          <XCircle className="w-3 h-3" />
-          {error}
+        <div className="flex items-center gap-2 text-[11px] text-red-600 bg-red-50 border border-red-200 px-3 py-2">
+          <XCircle className="w-4 h-4 shrink-0" />
+          <span>{error}</span>
         </div>
       )}
     </div>

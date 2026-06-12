@@ -203,6 +203,7 @@ export default function StudioPage() {
   const handleSave = async (isPublished: boolean) => {
     setSaving(true);
     const imageUrl = form.image_url;
+    console.log("[Studio] Saving article with image_url:", imageUrl);
     const record = {
       title: form.title,
       subheadline: form.subheadline,
