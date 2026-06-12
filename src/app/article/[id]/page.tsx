@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { MessageCircle } from "lucide-react";
 import BreakingNews from "@/components/layout/BreakingNews";
 import Navbar from "@/components/layout/Navbar";
@@ -159,6 +160,64 @@ export default function ArticlePage() {
     fetchComments();
   }, [fetchComments]);
 
+  useEffect(() => {
+    if (!article) return;
+    const jsonld = {
+      "@context": "https://schema.org",
+      "@type": "NewsArticle",
+      "headline": article.title,
+      "description": article.summary || article.subheadline,
+      "image": imageUrl || undefined,
+      "datePublished": article.publishedAt,
+      "dateModified": article.updatedAt || article.publishedAt,
+      "author": [{
+        "@type": "Person",
+        "name": article.author,
+      }],
+      "publisher": {
+        "@type": "Organization",
+        "name": "Campus TIMELINE",
+      },
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": window.location.href,
+      },
+    };
+    const scriptId = "article-jsonld";
+    let script = document.getElementById(scriptId) as HTMLScriptElement | null;
+    if (!script) {
+      script = document.createElement("script");
+      script.id = scriptId;
+      script.type = "application/ld+json";
+      document.head.appendChild(script);
+    }
+    script.textContent = JSON.stringify(jsonld);
+
+    document.title = `${article.title} — Campus TIMELINE`;
+    const ogDesc = article.summary || article.subheadline || "";
+    const updateMeta = (prop: string, name: string, content: string) => {
+      let el = document.querySelector(`meta[${prop}="${name}"]`);
+      if (!el) {
+        el = document.createElement("meta");
+        el.setAttribute(prop, name);
+        document.head.appendChild(el);
+      }
+      el.setAttribute("content", content);
+    };
+    updateMeta("property", "og:title", `${article.title} — Campus TIMELINE`);
+    updateMeta("property", "og:description", ogDesc);
+    updateMeta("property", "og:type", "article");
+    updateMeta("property", "og:url", window.location.href);
+    updateMeta("name", "description", ogDesc);
+    updateMeta("name", "twitter:card", "summary_large_image");
+    updateMeta("name", "twitter:title", `${article.title} — Campus TIMELINE`);
+    updateMeta("name", "twitter:description", ogDesc);
+    if (imageUrl) {
+      updateMeta("property", "og:image", imageUrl);
+      updateMeta("name", "twitter:image", imageUrl);
+    }
+  }, [article]);
+
   if (loading) {
     return (
       <>
@@ -297,14 +356,17 @@ export default function ArticlePage() {
           </div>
 
           {imageUrl && (
-            <figure style={{ margin: '0 0 32px 0' }}>
-              <img src={imageUrl} alt={article.imageCaption || article.title} loading="lazy" decoding="async"
-                style={{
-                  width: '100%',
-                  height: 'clamp(240px, 50vw, 480px)',
-                  objectFit: 'cover',
-                  display: 'block',
-                }} />
+            <figure style={{ margin: '0 0 32px 0', position: 'relative' }}>
+              <div style={{ position: 'relative', width: '100%', height: 'clamp(240px, 50vw, 480px)', overflow: 'hidden' }}>
+                <Image
+                  src={imageUrl}
+                  alt={article.imageCaption || article.title}
+                  fill
+                  sizes="(max-width: 768px) 100vw, 740px"
+                  style={{ objectFit: 'cover' }}
+                  priority={true}
+                />
+              </div>
               {article.imageCaption && (
                 <figcaption style={{
                   fontFamily: 'var(--font-source-serif)',

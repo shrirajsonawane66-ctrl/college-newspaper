@@ -50,6 +50,10 @@ export default function TermsModal() {
   const [declined, setDeclined] = useState(false);
 
   useEffect(() => {
+    const stored = localStorage.getItem("terms-accepted");
+    if (stored === "true") {
+      setAccepted(true);
+    }
     setMounted(true);
   }, []);
 
@@ -66,6 +70,7 @@ export default function TermsModal() {
   }, [mounted, accepted]);
 
   const handleAccept = () => {
+    localStorage.setItem("terms-accepted", "true");
     setAccepted(true);
   };
 

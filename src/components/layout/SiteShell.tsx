@@ -2,11 +2,13 @@
 
 import { motion } from "framer-motion";
 import FloatingParticles from "@/components/ui/FloatingParticles";
+import TermsModal from "@/components/layout/TermsModal";
 
 export default function SiteShell({ children }: { children: React.ReactNode }) {
   return (
     <>
       <FloatingParticles />
+      <TermsModal />
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}

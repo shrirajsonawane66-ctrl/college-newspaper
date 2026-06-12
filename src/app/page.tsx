@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import BreakingNews from "@/components/layout/BreakingNews";
 import Navbar from "@/components/layout/Navbar";
 import Masthead from "@/components/layout/Masthead";
@@ -230,8 +231,10 @@ export default function Home() {
                 {(() => {
                   const imgUrl = getArticleImage(featured);
                   return imgUrl ? (
-                    <img src={imgUrl} alt={featured.title} loading="eager" decoding="async" fetchPriority="high"
-                      style={{ width: '100%', height: '300px', objectFit: 'cover', display: 'block' }} />
+                    <div style={{ position: 'relative', width: '100%', height: 'clamp(200px, 50vw, 300px)', overflow: 'hidden' }}>
+                      <Image src={imgUrl} alt={featured.title} fill sizes="(max-width: 768px) 100vw, 50vw"
+                        style={{ objectFit: 'cover' }} priority={true} />
+                    </div>
                   ) : null;
                 })()}
                 <div style={{ fontFamily: 'var(--font-sans)', fontSize: '10px', fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase', color: '#a67c3e', marginTop: '12px', marginBottom: '4px' }}>
@@ -279,8 +282,10 @@ export default function Home() {
                     style={{ display: 'block', textDecoration: 'none', paddingBottom: '16px', marginBottom: '16px', borderBottom: '1px solid #e2e2e2' }}>
                     <div style={{ display: 'flex', gap: '12px' }}>
                       {imgUrl && (
-                        <img src={imgUrl} alt={article.title} loading="lazy" decoding="async"
-                          style={{ width: '96px', height: '64px', objectFit: 'cover', flexShrink: 0, display: 'block' }} />
+                        <div style={{ position: 'relative', width: '96px', height: '64px', flexShrink: 0, overflow: 'hidden' }}>
+                          <Image src={imgUrl} alt={article.title} fill sizes="96px"
+                            style={{ objectFit: 'cover' }} loading="lazy" />
+                        </div>
                       )}
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontFamily: 'var(--font-sans)', fontSize: '10px', fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase', color: '#a67c3e', marginBottom: '2px' }}>

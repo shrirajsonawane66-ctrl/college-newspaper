@@ -26,8 +26,28 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Campus TIMELINE — The Official College Newspaper",
+  title: {
+    default: "Campus TIMELINE — The Official College Newspaper",
+    template: "%s — Campus TIMELINE",
+  },
   description: "The official student newspaper of Campus — bringing you campus news, announcements, achievements, and events since 2026.",
+  openGraph: {
+    title: "Campus TIMELINE — The Official College Newspaper",
+    description: "The official student newspaper of Campus — bringing you campus news, announcements, achievements, and events since 2026.",
+    type: "website",
+    siteName: "Campus TIMELINE",
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Campus TIMELINE — The Official College Newspaper",
+    description: "The official student newspaper of Campus — bringing you campus news, announcements, achievements, and events since 2026.",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
+  keywords: ["college newspaper", "campus news", "student newspaper", "Campus", "student journalism"],
 };
 
 export const viewport = {
