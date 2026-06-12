@@ -75,7 +75,7 @@ export default function ImageUploader({ onUploadComplete, onUploadStart, initial
 
       const {
         data: { publicUrl },
-      } = supabase.storage.from("article-images").getPublicUrl(data.path);
+      } = supabase.storage.from("article-thumbnails").getPublicUrl(data.path);
 
       setProgress(100);
       setPreview(publicUrl);
