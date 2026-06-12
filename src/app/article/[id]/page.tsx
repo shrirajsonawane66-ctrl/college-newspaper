@@ -44,12 +44,14 @@ interface ArticleRow {
 }
 
 interface CommentRow {
-  id: string;
-  article_id: string;
+  id: number;
+  article_id: number;
   author_name: string;
   content: string;
   created_at: string;
-  approved: boolean;
+  updated_at: string;
+  likes: number;
+  is_approved: boolean;
 }
 
 export default function ArticlePage() {
@@ -139,19 +141,21 @@ export default function ArticlePage() {
     if (!params.id) return;
     const { data, error } = await getSupabase()
       .from("comments")
-      .select("*")
-      .eq("article_id", params.id)
+      .select("id, article_id, author_name, content, created_at, updated_at, likes, is_approved")
+      .eq("article_id", Number(params.id))
+      .eq("is_approved", true)
       .order("created_at", { ascending: false });
 
     if (!error) {
       const mapped: Comment[] = (data || []).map((row: CommentRow) => ({
         id: row.id,
-        articleId: row.article_id,
-        authorName: row.author_name,
+        article_id: row.article_id,
+        author_name: row.author_name,
         content: row.content,
-        createdAt: row.created_at,
-        approved: row.approved,
-        avatar: row.author_name?.charAt(0).toUpperCase() || "?",
+        created_at: row.created_at,
+        updated_at: row.updated_at,
+        likes: row.likes,
+        is_approved: row.is_approved,
       }));
       setCommentsList(mapped);
     }

@@ -24,7 +24,7 @@ interface ArticleRow {
 }
 
 interface CommentRow {
-  id: string; article_id: string; author_name: string; content: string; created_at: string;
+  id: number; article_id: number; author_name: string; content: string; created_at: string; updated_at: string; likes: number; is_approved: boolean;
 }
 
 interface ContactMessageRow {
@@ -310,7 +310,7 @@ function CommentsTab({ searchTerm, setSearchTerm }: { searchTerm: string; setSea
   const [list, setList] = useState<CommentRow[]>([]);
   const [articles, setArticles] = useState<ArticleRow[]>([]);
   const [loading, setLoading] = useState(true);
-  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<number | null>(null);
   const [editForm, setEditForm] = useState({ author_name: "", content: "" });
 
   useEffect(() => {
@@ -334,16 +334,16 @@ function CommentsTab({ searchTerm, setSearchTerm }: { searchTerm: string; setSea
     });
   }, []);
 
-  const articleTitleById = (id: string) => articles.find((a) => a.id === id)?.title || "\u2014";
+  const articleTitleById = (id: number) => articles.find((a) => a.id === String(id))?.title || "\u2014";
 
-  const saveCommentEdit = async (id: string) => {
+  const saveCommentEdit = async (id: number) => {
     const { error } = await getSupabase().from("comments")
       .update({ author_name: editForm.author_name, content: editForm.content }).eq("id", id);
     if (error) showNotification("error", "Failed to update comment.");
     else { showNotification("success", "Comment updated."); setEditingId(null); refetch(); }
   };
 
-  const handleDelete = async (id: string, author: string) => {
+  const handleDelete = async (id: number, author: string) => {
     if (!window.confirm(`Delete comment by "${author}"?`)) return;
     const { error } = await getSupabase().from("comments").delete().eq("id", id);
     if (error) showNotification("error", "Delete failed.");

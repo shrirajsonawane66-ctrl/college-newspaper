@@ -4,7 +4,6 @@ import { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import { ThumbsUp, ThumbsDown } from "lucide-react";
 import { getSupabase } from "@/lib/supabase";
-import type { Comment } from "@/lib/data";
 
 function timeAgo(dateString: string): string {
   const now = new Date();
@@ -24,6 +23,17 @@ function timeAgo(dateString: string): string {
   return `${months}mo ago`;
 }
 
+interface CommentDisplay {
+  id: number;
+  article_id: number;
+  author_name: string;
+  content: string;
+  created_at: string;
+  updated_at: string;
+  likes: number;
+  is_approved: boolean;
+}
+
 export default function CommentForm({ articleId, onSuccess }: { articleId: string; onSuccess?: () => void }) {
   const [username, setUsername] = useState("");
   const [content, setContent] = useState("");
@@ -39,26 +49,32 @@ export default function CommentForm({ articleId, onSuccess }: { articleId: strin
     setError("");
     try {
       setLoading(true);
-      const { error: insertError } = await getSupabase()
+
+      const payload = {
+        article_id: Number(articleId),
+        author_name: username.trim() || 'Anonymous',
+        content: content.trim(),
+      };
+      console.log('COMMENT PAYLOAD:', JSON.stringify(payload, null, 2));
+
+      const { data, error: insertError } = await getSupabase()
         .from("comments")
-        .insert([
-          {
-            article_id: articleId,
-            author_name: username.trim(),
-            content: content.trim(),
-            approved: true,
-          },
-        ]);
+        .insert(payload)
+        .select();
+
       if (insertError) {
-        setError("Failed to post. Check your connection.");
+        console.error('COMMENT INSERT ERROR:', JSON.stringify(insertError, null, 2));
+        setError(`Failed to post: ${insertError.message}`);
         return;
       }
+      console.log('COMMENT INSERT RESULT:', data);
       setPosted(true);
       setTimeout(() => setPosted(false), 2000);
       setUsername("");
       setContent("");
       onSuccess?.();
-    } catch {
+    } catch (e) {
+      console.error("[CommentForm] Unexpected error:", e);
       setError("Something went wrong. Try again.");
     } finally {
       setLoading(false);
@@ -131,16 +147,16 @@ export default function CommentForm({ articleId, onSuccess }: { articleId: strin
   );
 }
 
-export function CommentCard({ comment }: { comment: Comment & { onReply?: () => void } }) {
+export function CommentCard({ comment }: { comment: CommentDisplay & { onReply?: () => void } }) {
   return (
     <div className="flex gap-3 py-4">
       <div className="w-10 h-10 rounded-full bg-gradient-to-br from-sepia to-gold flex items-center justify-center text-paper text-sm font-bold shrink-0 font-sans">
-        {comment.avatar}
+        {comment.author_name?.charAt(0).toUpperCase() || "?"}
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-sm font-semibold text-ink font-sans">{comment.authorName}</span>
-          <span className="text-xs text-ink-faded font-sans">{timeAgo(comment.createdAt)}</span>
+          <span className="text-sm font-semibold text-ink font-sans">{comment.author_name}</span>
+          <span className="text-xs text-ink-faded font-sans">{timeAgo(comment.created_at)}</span>
         </div>
         <p className="mt-0.5 text-sm text-ink-light leading-relaxed font-sans">{comment.content}</p>
         <div className="flex items-center gap-4 mt-1.5">
@@ -159,5 +175,3 @@ export function CommentCard({ comment }: { comment: Comment & { onReply?: () => 
     </div>
   );
 }
-
-export type { Comment };

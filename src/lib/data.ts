@@ -50,13 +50,14 @@ export interface ArticleForm {
 }
 
 export interface Comment {
-  id: string;
-  articleId: string;
-  authorName: string;
+  id: number;
+  article_id: number;
+  author_name: string;
   content: string;
-  createdAt: string;
-  approved: boolean;
-  avatar: string;
+  created_at: string;
+  updated_at: string;
+  likes: number;
+  is_approved: boolean;
 }
 
 export interface Category {

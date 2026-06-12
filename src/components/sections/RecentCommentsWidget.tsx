@@ -17,7 +17,7 @@ export default function RecentCommentsWidget() {
     getSupabase()
       .from("comments")
       .select("id, author_name, content")
-      .eq("approved", true)
+      .eq("is_approved", true)
       .order("created_at", { ascending: false })
       .limit(4)
       .then(({ data }) => {
