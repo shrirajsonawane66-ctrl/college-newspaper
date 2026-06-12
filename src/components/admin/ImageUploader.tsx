@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect } from "react";
 import { Upload, CheckCircle, XCircle, Link as LinkIcon } from "lucide-react";
-import { getSupabaseClient } from "@/lib/supabase/client";
+import { getSupabase } from "@/lib/supabase";
 
 interface ImageUploaderProps {
   onUploadComplete: (publicUrl: string) => void;
@@ -53,7 +53,7 @@ export default function ImageUploader({ onUploadComplete, onUploadStart, initial
     }, 300);
 
     try {
-      const supabase = getSupabaseClient();
+      const supabase = getSupabase();
       const ext = file.name.split(".").pop();
       const fileName = `articles/${Date.now()}-${crypto.randomUUID()}.${ext}`;
 
