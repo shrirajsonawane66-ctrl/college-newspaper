@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff, KeyRound } from "lucide-react";
 import Link from "next/link";
@@ -13,6 +13,18 @@ export default function AdminLogin() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    getSupabase().auth.getSession().then(({ data: { session } }) => {
+      if (!session?.user) return;
+      getSupabase().from("profiles").select("role").eq("id", session.user.id).single().then(({ data }) => {
+        if (data && data.role !== "admin") {
+          setError("Your account does not have admin access.");
+          getSupabase().auth.signOut();
+        }
+      });
+    });
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

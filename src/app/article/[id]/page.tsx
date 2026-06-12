@@ -58,6 +58,7 @@ export default function ArticlePage() {
   const [allArticles, setAllArticles] = useState<Article[]>([]);
   const [commentsList, setCommentsList] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
+  const [imageError, setImageError] = useState(false);
 
   useEffect(() => {
     if (!params.id) return;
@@ -249,7 +250,7 @@ export default function ArticlePage() {
     );
   }
 
-  const imageUrl = getArticleImage(article) || getArticleThumbnail(article.id);
+  const imageUrl = (!imageError && getArticleImage(article)) || getArticleThumbnail(article.id);
 
   return (
     <>
@@ -365,6 +366,7 @@ export default function ArticlePage() {
                   sizes="(max-width: 768px) 100vw, 740px"
                   style={{ objectFit: 'cover' }}
                   priority={true}
+                  onError={() => setImageError(true)}
                 />
               </div>
               {article.imageCaption && (
