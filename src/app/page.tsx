@@ -3,9 +3,15 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import BreakingNews from "@/components/layout/BreakingNews";
+import Navbar from "@/components/layout/Navbar";
+import Masthead from "@/components/layout/Masthead";
+import CategoryNav from "@/components/layout/CategoryNav";
+import NewsTicker from "@/components/layout/NewsTicker";
 import Footer from "@/components/layout/Footer";
 import { getSupabase } from "@/lib/supabase";
 import { getArticleImage, type Article } from "@/lib/data";
+import { TechNewsSection } from "@/components/sections/TechNewsSection";
 
 interface ArticleRow {
   id: string;
@@ -33,245 +39,268 @@ interface ArticleRow {
   tags: string;
 }
 
-function formatDate(dateStr: string) {
-  return new Date(dateStr).toLocaleDateString("en-US", {
-    weekday: "long", year: "numeric", month: "long", day: "numeric",
-  });
-}
-
 export default function Home() {
   const [articlesList, setArticlesList] = useState<Article[]>([]);
+  const [techNewsData, setTechNewsData] = useState<{ news: any[]; totalPages: number }>({ news: [], totalPages: 4 });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    async function fetchData() {
-      const { data, error: err } = await getSupabase()
-        .from("articles")
-        .select("*")
-        .eq("is_published", true)
-        .order("created_at", { ascending: false })
-        .limit(8);
-
-      if (err) { setError("Failed to load articles."); setLoading(false); return; }
-
-      const mapped: Article[] = (data || []).map((row: ArticleRow) => {
-        const imgUrl = row.image_url || row.thumbnail_url || row.cover_image || "";
-        return {
-          id: row.id, title: row.title, subheadline: row.subheadline || "",
-          summary: row.summary, content: row.content, category: row.category,
-          categorySlug: row.category_slug, imageUrl: imgUrl, thumbnailUrl: imgUrl,
-          coverImage: imgUrl, imageCaption: row.image_caption || "",
-          imageCredit: row.image_credit || "", author: row.author,
-          authorRole: row.author_role, publishedAt: row.published_at,
-          isPublished: row.is_published, featured: row.featured || false,
-          trending: row.trending || false, editorPick: row.editor_pick || false,
-          dropCap: row.drop_cap !== false, readTime: row.read_time,
-          isNew: row.is_new, tags: row.tags || "",
-        };
-      });
-      setArticlesList(mapped);
-      setLoading(false);
+  const fetchTechNewsInitial = useCallback(async () => {
+    try {
+      const res = await fetch("/api/tech-news?page=1");
+      return await res.json();
+    } catch {
+      return { news: [], totalPages: 4 };
     }
-    fetchData();
   }, []);
 
-  if (loading || error || articlesList.length === 0) {
-    const msg = loading ? "Loading articles\u2026" : error || "No articles yet.";
+  useEffect(() => {
+    async function fetchData() {
+      const [articlesResult, techNewsResult] = await Promise.all([
+        getSupabase()
+          .from("articles")
+          .select("*")
+          .eq("is_published", true)
+          .order("created_at", { ascending: false })
+          .limit(6),
+        fetchTechNewsInitial(),
+      ]);
+
+      if (articlesResult.error) {
+        setError("Failed to load articles.");
+        setLoading(false);
+        return;
+      }
+
+      const mapped: Article[] = (articlesResult.data || []).map((row: ArticleRow) => {
+        const imgUrl = row.image_url || row.thumbnail_url || row.cover_image || "";
+        return {
+          id: row.id,
+          title: row.title,
+          subheadline: row.subheadline || "",
+          summary: row.summary,
+          content: row.content,
+          category: row.category,
+          categorySlug: row.category_slug,
+          imageUrl: imgUrl,
+          thumbnailUrl: imgUrl,
+          coverImage: imgUrl,
+          imageCaption: row.image_caption || "",
+          imageCredit: row.image_credit || "",
+          author: row.author,
+          authorRole: row.author_role,
+          publishedAt: row.published_at,
+          isPublished: row.is_published,
+          featured: row.featured || false,
+          trending: row.trending || false,
+          editorPick: row.editor_pick || false,
+          dropCap: row.drop_cap !== false,
+          readTime: row.read_time,
+          isNew: row.is_new,
+          tags: row.tags || "",
+        };
+      });
+
+      setArticlesList(mapped);
+      setTechNewsData(techNewsResult);
+      setLoading(false);
+    }
+
+    fetchData();
+  }, [fetchTechNewsInitial]);
+
+  if (loading) {
     return (
-      <main className="home-surface min-h-screen flex items-center justify-center" style={{ fontFamily: "var(--font-archivo), sans-serif" }}>
-        <div className="text-center">
-          <h1 className="home-masthead-title mb-6 home-text-primary">THE CHRONICLE</h1>
-          {loading ? (
-            <span className="home-label-tight home-text-on-surface-variant">{msg}</span>
-          ) : (
-            <>
-              <p className="home-body-sm home-text-on-surface-variant mb-4">{msg}</p>
-              {msg === "No articles yet." && (
-                <Link href="/" className="home-subhead-caps home-text-secondary underline underline-offset-4">Refresh</Link>
-              )}
-            </>
-          )}
-        </div>
-      </main>
+      <>
+        <BreakingNews />
+        <Navbar />
+        <Masthead />
+        <CategoryNav />
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
+          <div className="flex items-center justify-center gap-2" style={{ fontFamily: "var(--font-archivo)", fontSize: "12px", color: "#5a5046" }}>
+            <span className="inline-block w-4 h-4 border border-[#5a5046]/20 border-t-[#5a5046] rounded-full animate-spin" />
+            Loading articles&hellip;
+          </div>
+        </main>
+        <Footer />
+      </>
     );
   }
 
-  const a = articlesList;
-  const featured = a[0];
-  const secondary = a.slice(1, 3);
-  const editorial = a.slice(3, 5);
-  const artsArticle = a[5];
+  if (error) {
+    return (
+      <>
+        <BreakingNews />
+        <Navbar />
+        <Masthead />
+        <CategoryNav />
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
+          <p className="vintage-body-sm" style={{ color: "#8b6f4e" }}>{error}</p>
+        </main>
+        <Footer />
+      </>
+    );
+  }
+
+  if (articlesList.length === 0) {
+    return (
+      <>
+        <BreakingNews />
+        <Navbar />
+        <Masthead />
+        <CategoryNav />
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
+          <div className="border-2 border-dashed border-[#c8bfa8] max-w-md mx-auto p-8" style={{ fontFamily: "var(--font-source-serif)" }}>
+            <h2 className="vintage-headline-md mb-2">No Articles Yet</h2>
+            <p className="vintage-body-sm" style={{ color: "#5a5046" }}>Published articles will appear here once they are created in the admin panel.</p>
+          </div>
+        </main>
+        <Footer />
+      </>
+    );
+  }
+
+  const articles = articlesList;
+  const featured = articles[0];
+  const secondary = articles.slice(1, 3);
+  const smallArticles = articles.slice(3, 5);
+  const bottomArticle = articles[5];
 
   return (
     <>
-      {/* ─── HEADER ─── */}
-      <header className="w-full home-surface">
-        <div className="flex flex-col items-center w-full px-8 max-w-screen-2xl mx-auto">
-          <div className="w-full flex justify-between items-center py-2" style={{ borderBottom: "1px solid #000" }}>
-            <div className="flex gap-4">
-              <span className="home-label-tight home-text-primary">Vol. CXIV ... No. 34,102</span>
-              <span className="home-label-tight home-text-primary px-4" style={{ borderLeft: "1px solid #000", borderRight: "1px solid #000" }}>Campus - City - World</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="home-label-tight home-text-primary">Edition:</span>
-              <span className="home-label-tight home-text-primary">{formatDate(a[0]?.publishedAt || new Date().toISOString())}</span>
-            </div>
+      <BreakingNews />
+      <Navbar />
+      <Masthead />
+      <CategoryNav />
+      <NewsTicker articles={articles} />
+      <main className="home-surface" style={{ minHeight: "100vh" }}>
+        <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 16px" }}>
+          <div className="home-subhead-caps home-text-primary py-3" style={{ borderBottom: "1px solid #000", marginBottom: 0, letterSpacing: "0.15em" }}>
+            Top Stories
           </div>
-          <div className="w-full py-6 text-center" style={{ borderBottom: "4px solid #000" }}>
-            <h1 className="home-masthead-title home-text-primary tracking-tighter">THE CHRONICLE</h1>
-            <div className="flex justify-between items-center mt-2 px-1">
-              <span className="home-subhead-caps home-text-primary">Founded 2026</span>
-              <div className="flex gap-8">
-                <span className="home-subhead-caps home-text-primary tracking-widest">{formatDate(a[0]?.publishedAt || new Date().toISOString()).toUpperCase()}</span>
-              </div>
-              <span className="home-subhead-caps home-text-primary">Free Edition</span>
+
+          <div className="nyt-grid" style={{ marginTop: 0 }}>
+            {/* Left column */}
+            <div style={{ padding: "20px 16px 20px 0" }}>
+              {secondary.map((article) => {
+                const imgUrl = getArticleImage(article);
+                return (
+                  <Link key={article.id} href={`/article/${article.id}`}
+                    className="block no-underline" style={{ paddingBottom: "16px", marginBottom: "16px", borderBottom: "1px solid #000" }}>
+                    <div className="home-subhead-caps home-text-secondary mb-1" style={{ fontSize: "10px", letterSpacing: "0.1em" }}>
+                      {article.category}
+                    </div>
+                    <h3 className="vintage-headline-md" style={{ fontSize: "16px", margin: 0 }}>
+                      {article.title}
+                    </h3>
+                    <p className="vintage-body-sm home-justified" style={{ color: "#5a5046", marginTop: "6px", marginBottom: 0 }}>
+                      {article.summary}
+                    </p>
+                  </Link>
+                );
+              })}
             </div>
-          </div>
-          <nav className="w-full flex justify-center py-3" style={{ borderBottom: "1px solid #000" }}>
-            <ul className="flex gap-8">
-              {["Politics", "Campus", "Arts", "Opinion", "Tech", "Archive"].map((item) => (
-                <li key={item}>
-                  <a className={`home-subhead-caps px-1 ${item === "Politics" ? "font-bold" : ""}`}
-                    href={item === "Archive" ? "/archive" : `/category/${item.toLowerCase()}`}
-                    style={{ color: item === "Politics" ? "#000" : "#444748", borderBottom: item === "Politics" ? "2px solid #000" : "none" }}>
-                    {item}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </nav>
-        </div>
-      </header>
 
-      {/* ─── MAIN GRID ─── */}
-      <main className="max-w-screen-2xl mx-auto px-8 py-8 home-surface">
-        <div className="grid grid-cols-12 gap-6">
-          {/* LEFT SIDEBAR (3 cols) */}
-          <aside className="col-span-3 flex flex-col gap-8">
-            {/* Financials */}
-            <section style={{ border: "1px solid #000", padding: "16px", backgroundColor: "#fbf3df" }}>
-              <h2 className="home-subhead-caps home-text-primary uppercase" style={{ borderBottom: "1px solid #000", paddingBottom: "4px", marginBottom: "12px" }}>Campus Dashboard</h2>
-              <div className="flex justify-between items-end mb-2">
-                <span className="home-label-tight home-text-primary">Enrolled</span>
-                <span className="home-headline-md home-text-primary" style={{ fontSize: "20px" }}>+12.4%</span>
-              </div>
-              <div className="space-y-2" style={{ borderTop: "1px solid rgba(0,0,0,0.2)", paddingTop: "8px" }}>
-                <div className="flex justify-between home-label-tight home-text-primary"><span>Freshmen</span><span>2,450</span></div>
-                <div className="flex justify-between home-label-tight home-text-primary"><span>Sophomores</span><span>1,980</span></div>
-                <div className="flex justify-between home-label-tight home-text-primary"><span>Juniors</span><span>1,720</span></div>
-              </div>
-              <p className="home-body-sm home-text-on-surface-variant italic mt-4 text-center">"Record enrollment this academic year."</p>
-            </section>
+            <div className="nyt-divider" style={{ width: "1px", backgroundColor: "#000" }} />
 
-            {/* Foreign Intelligence */}
-            {secondary.length > 0 && (
-              <section style={{ borderTop: "4px solid #000", paddingTop: "16px" }}>
-                <h3 className="home-subhead-caps home-text-secondary mb-2">Around Campus</h3>
-                {secondary.map((art) => (
-                  <Link key={art.id} href={`/article/${art.id}`} className="block no-underline mb-6 group">
-                    <h2 className="home-headline-md home-text-primary mb-3 leading-tight" style={{ fontSize: "20px" }}>{art.title}</h2>
-                    <p className="home-body-sm home-text-on-surface-variant home-justified">{art.summary}</p>
-                    <div className="mt-4 pt-4" style={{ borderTop: "1px solid rgba(0,0,0,0.2)" }}>
-                      <span className="home-subhead-caps text-[11px] home-text-on-surface-variant" style={{ letterSpacing: "0" }}>By {art.author} | {art.category}</span>
+            {/* Center column */}
+            <div style={{ padding: "20px 16px" }}>
+              <Link key={featured.id} href={`/article/${featured.id}`} className="block no-underline">
+                {(() => {
+                  const imgUrl = getArticleImage(featured);
+                  return imgUrl ? (
+                    <div className="home-halftone" style={{ border: "1px solid #000", padding: "3px", backgroundColor: "#fff" }}>
+                      <div style={{ position: "relative", width: "100%", height: "clamp(200px, 50vw, 300px)", overflow: "hidden" }}>
+                        <Image src={imgUrl} alt={featured.title} fill sizes="(max-width: 768px) 100vw, 50vw"
+                          style={{ objectFit: "cover" }} priority />
+                      </div>
+                    </div>
+                  ) : null;
+                })()}
+                <div className="home-subhead-caps home-text-secondary mt-3 mb-1" style={{ fontSize: "10px", letterSpacing: "0.1em" }}>
+                  {featured.category}
+                </div>
+                <h2 className="vintage-headline home-text-primary" style={{ fontSize: "clamp(24px, 3vw, 36px)", margin: "4px 0 8px" }}>
+                  {featured.title}
+                </h2>
+                <p className="vintage-body-sm" style={{ color: "#5a5046", margin: "0 0 8px" }}>
+                  {featured.subheadline || featured.summary}
+                </p>
+                <p className="home-subhead-caps" style={{ fontSize: "11px", color: "#444748", letterSpacing: "0.05em", margin: 0 }}>
+                  By {featured.author}
+                </p>
+              </Link>
+            </div>
+
+            <div className="nyt-divider" style={{ width: "1px", backgroundColor: "#000" }} />
+
+            {/* Right column */}
+            <div style={{ padding: "20px 0 20px 16px" }}>
+              {smallArticles.map((article) => {
+                const imgUrl = getArticleImage(article);
+                return (
+                  <Link key={article.id} href={`/article/${article.id}`}
+                    className="block no-underline" style={{ paddingBottom: "16px", marginBottom: "16px", borderBottom: "1px solid #000" }}>
+                    <div style={{ display: "flex", gap: "12px" }}>
+                      {imgUrl && (
+                        <div className="home-halftone" style={{ width: "96px", height: "64px", flexShrink: 0, border: "1px solid #000", padding: "2px", backgroundColor: "#fff", position: "relative", overflow: "hidden" }}>
+                          <Image src={imgUrl} alt={article.title} fill sizes="96px" style={{ objectFit: "cover" }} loading="lazy" />
+                        </div>
+                      )}
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div className="home-subhead-caps home-text-secondary mb-1" style={{ fontSize: "10px", letterSpacing: "0.1em" }}>
+                          {article.category}
+                        </div>
+                        <h3 className="vintage-headline-md" style={{ fontSize: "15px", margin: 0 }}>
+                          {article.title}
+                        </h3>
+                      </div>
                     </div>
                   </Link>
-                ))}
-              </section>
-            )}
-
-            {/* Archive Promo */}
-            <div className="flex flex-col gap-4 py-6" style={{ borderTop: "1px solid #000", borderBottom: "1px solid #000" }}>
-              <div style={{ backgroundColor: "#000", color: "#fff9ee", padding: "16px" }}>
-                <h4 className="home-subhead-caps home-text-surface uppercase mb-2">The Archive</h4>
-                <p className="home-body-sm home-text-surface">Browse every edition published by our college newspaper.</p>
-              </div>
+                );
+              })}
             </div>
-          </aside>
+          </div>
 
-          {/* CENTER — MAIN STORY (6 cols) */}
-          <article className="col-span-6" style={{ borderLeft: "1px solid #000", borderRight: "1px solid #000", padding: "0 24px" }}>
-            <div className="mb-6">
-              <span className="home-subhead-caps home-text-secondary">Feature Exposition</span>
-              <h2 className="home-headline-lg home-text-primary leading-none mb-4 mt-2">{featured.title}</h2>
-              {featured.subheadline && (
-                <h3 className="home-headline-md home-text-on-surface-variant italic font-normal mb-6">{featured.subheadline}</h3>
-              )}
-            </div>
-
-            {getArticleImage(featured) && (
-              <figure className="mb-6 home-halftone" style={{ border: "1px solid #000", padding: "4px", backgroundColor: "#fff" }}>
-                <Image src={getArticleImage(featured)!} alt={featured.title} width={800} height={400}
-                  className="w-full h-auto" style={{ display: "block" }} priority />
-                {featured.imageCaption && (
-                  <figcaption className="home-body-sm home-text-primary italic mt-2 px-1">
-                    {featured.imageCaption}
-                    {featured.imageCredit && <span> &mdash; Photo: {featured.imageCredit}</span>}
-                  </figcaption>
-                )}
-              </figure>
-            )}
-
-            <div className="home-newspaper-columns home-justified">
-              <p className="home-body-main home-dropcap" style={{ marginBottom: "1rem" }}>
-                {featured.summary || featured.content?.replace(/<[^>]*>/g, "").slice(0, 400) || "Read the full article on the dedicated page."}
-              </p>
-              <div style={{ marginTop: "1rem" }}>
-                <Link href={`/article/${featured.id}`} className="home-subhead-caps home-text-secondary underline underline-offset-4 hover:opacity-80">
-                  Continue Reading →
-                </Link>
-              </div>
-            </div>
-
-            <div className="mt-8 pt-4 flex justify-between items-center" style={{ borderTop: "2px solid #000" }}>
-              <span className="home-subhead-caps home-text-primary">By {featured.author}{featured.authorRole ? `, ${featured.authorRole}` : ""}</span>
-            </div>
-          </article>
-
-          {/* RIGHT SIDEBAR (3 cols) */}
-          <aside className="col-span-3 flex flex-col gap-8">
-            {/* Editorial Desk */}
-            <section style={{ borderBottom: "1px solid #000", paddingBottom: "32px" }}>
-              <h2 className="home-subhead-caps home-text-primary uppercase mb-4" style={{ backgroundColor: "#e6e2df", padding: "4px 8px", display: "inline-block" }}>The Editorial Desk</h2>
-              {editorial.map((art) => (
-                <Link key={art.id} href={`/article/${art.id}`} className="block no-underline mb-6 group">
-                  <h3 className="home-headline-md home-text-primary hover:underline decoration-1 underline-offset-4">{art.title}</h3>
-                  <p className="home-body-sm home-text-on-surface-variant mt-2">{art.summary}</p>
-                </Link>
-              ))}
-            </section>
-
-            {/* Arts Section */}
-            {artsArticle && (
-              <section>
-                <span className="home-subhead-caps home-text-secondary tracking-widest block mb-4">■ THE CULTURAL REVIEW ■</span>
-                <div style={{ border: "1px solid #000", padding: "16px" }}>
-                  <Link href={`/article/${artsArticle.id}`} className="no-underline">
-                    <h2 className="home-headline-md home-text-primary leading-tight">{artsArticle.title}</h2>
-                    <p className="home-body-sm home-text-on-surface-variant mt-2">{artsArticle.summary}</p>
-                  </Link>
-                </div>
-              </section>
-            )}
-
-            {/* The Almanac */}
-            <section style={{ borderTop: "4px solid #000", paddingTop: "16px", marginTop: "auto" }}>
-              <div style={{ backgroundColor: "#eae2ce", padding: "16px", display: "flex", flexDirection: "column", alignItems: "center", border: "1px solid rgba(0,0,0,0.1)" }}>
-                <span className="home-subhead-caps home-text-secondary uppercase">The Almanac</span>
-                <div className="flex items-center gap-4 my-2">
-                  <span className="home-headline-lg" style={{ fontSize: "32px", lineHeight: 1 }}>68°</span>
-                  <div className="text-center">
-                    <div className="home-label-tight home-text-primary uppercase">Fair</div>
+          {bottomArticle && (() => {
+            const imgUrl = getArticleImage(bottomArticle);
+            return (
+              <div style={{ borderTop: "1px solid #000" }}>
+                <Link key={bottomArticle.id} href={`/article/${bottomArticle.id}`}
+                  className="block no-underline" style={{ padding: "20px 0", display: "flex", gap: "20px", alignItems: "center" }}>
+                  {imgUrl && (
+                    <div className="home-halftone" style={{ width: "200px", height: "120px", flexShrink: 0, border: "1px solid #000", padding: "3px", backgroundColor: "#fff", position: "relative", overflow: "hidden" }}>
+                      <Image src={imgUrl} alt={bottomArticle.title} fill sizes="200px" style={{ objectFit: "cover" }} loading="lazy" />
+                    </div>
+                  )}
+                  <div>
+                    <div className="home-subhead-caps home-text-secondary mb-1" style={{ fontSize: "10px", letterSpacing: "0.1em" }}>
+                      {bottomArticle.category}
+                    </div>
+                    <h3 className="vintage-headline-md" style={{ fontSize: "18px", margin: "0 0 6px" }}>
+                      {bottomArticle.title}
+                    </h3>
+                    <p className="vintage-body-sm" style={{ color: "#5a5046", margin: 0 }}>
+                      {bottomArticle.summary}
+                    </p>
                   </div>
-                </div>
-                <p className="home-body-sm home-text-on-surface-variant text-center">Sunset at 6:14 PM. Clear skies expected.</p>
+                </Link>
               </div>
-            </section>
-          </aside>
+            );
+          })()}
+
+          <div className="text-center py-4" style={{ borderTop: "1px solid #000", marginBottom: "48px" }}>
+            <Link href="/archive" className="home-subhead-caps home-text-primary no-underline" style={{ borderBottom: "1px solid #000", paddingBottom: "2px" }}>
+              View All College News →
+            </Link>
+          </div>
         </div>
       </main>
-
-      {/* ─── FOOTER ─── */}
+      <TechNewsSection
+        initialNews={techNewsData.news ?? []}
+        initialPage={1}
+        initialTotalPages={techNewsData.totalPages ?? 4}
+      />
       <Footer />
     </>
   );
