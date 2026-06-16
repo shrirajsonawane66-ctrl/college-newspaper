@@ -84,6 +84,9 @@ export default function AdminEditInvestigationPage() {
   const [editingCaption, setEditingCaption] = useState<string | null>(null);
   const [captionValue, setCaptionValue] = useState("");
 
+  const [selectedPages, setSelectedPages] = useState<Set<string>>(new Set());
+  const [deletingSelected, setDeletingSelected] = useState(false);
+
   const [dirty, setDirty] = useState(false);
 
   const dragItem = useRef<number | null>(null);
@@ -267,6 +270,38 @@ export default function AdminEditInvestigationPage() {
     showNotification("success", "Pages reordered.");
   };
 
+  const toggleSelectPage = (id: string) => {
+    setSelectedPages((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedPages.size === pages.length) {
+      setSelectedPages(new Set());
+    } else {
+      setSelectedPages(new Set(pages.map((p) => p.id)));
+    }
+  };
+
+  const handleDeleteSelected = async () => {
+    if (selectedPages.size === 0) return;
+    if (!window.confirm(`Delete ${selectedPages.size} selected page(s)?`)) return;
+    setDeletingSelected(true);
+    const toDelete = pages.filter((p) => selectedPages.has(p.id));
+    for (const page of toDelete) {
+      try { await deleteInvestigationPageImage(id, page.page_number); } catch {}
+      try { await getSupabase().from("investigation_pages").delete().eq("id", page.id); } catch {}
+    }
+    showNotification("success", `${toDelete.length} page(s) deleted.`);
+    setSelectedPages(new Set());
+    setDeletingSelected(false);
+    fetchData();
+  };
+
   if (authLoading || loading) {
     return (
       <div className="flex-1 flex items-center justify-center">
@@ -383,24 +418,40 @@ export default function AdminEditInvestigationPage() {
         </div>
 
         <div className="newspaper-card">
-          <div className="px-5 pt-4 pb-3 border-b border-border flex items-center justify-between">
-            <h2 className="font-serif text-lg font-bold text-ink">
-              Pages <span className="text-ink-faded text-base font-sans font-normal ml-1">({pages.length})</span>
-            </h2>
-            <div className="flex items-center gap-2">
-              <button onClick={() => fileInputRef.current?.click()} disabled={pageUploading}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-ink text-paper text-xs uppercase tracking-wider font-sans font-semibold hover:bg-ink-light transition-colors disabled:opacity-50">
-                <ImageUp className="w-3.5 h-3.5" /> Add Pages
-              </button>
-              <input
-                ref={fileInputRef}
-                type="file"
-                multiple
-                accept="image/*"
-                className="hidden"
-                onChange={(e) => e.target.files && handleUploadFiles(e.target.files)}
-              />
+          <div className="px-5 pt-4 pb-3 border-b border-border space-y-2">
+            <div className="flex items-center justify-between">
+              <h2 className="font-serif text-lg font-bold text-ink">
+                Pages <span className="text-ink-faded text-base font-sans font-normal ml-1">({pages.length})</span>
+              </h2>
+              <div className="flex items-center gap-2">
+                {selectedPages.size > 0 && (
+                  <button onClick={handleDeleteSelected} disabled={deletingSelected}
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-red-600 text-white text-xs uppercase tracking-wider font-sans font-semibold hover:bg-red-700 transition-colors disabled:opacity-50">
+                    <Trash2 className="w-3.5 h-3.5" /> Delete {selectedPages.size}
+                  </button>
+                )}
+                <button onClick={() => fileInputRef.current?.click()} disabled={pageUploading}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-ink text-paper text-xs uppercase tracking-wider font-sans font-semibold hover:bg-ink-light transition-colors disabled:opacity-50">
+                  <ImageUp className="w-3.5 h-3.5" /> Add Pages
+                </button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => e.target.files && handleUploadFiles(e.target.files)}
+                />
+              </div>
             </div>
+            {pages.length > 0 && (
+              <label className="flex items-center gap-2 text-xs text-ink-lighter font-sans cursor-pointer select-none w-fit">
+                <input type="checkbox" checked={selectedPages.size === pages.length && pages.length > 0}
+                  onChange={toggleSelectAll}
+                  className="w-3.5 h-3.5 accent-sepia cursor-pointer" />
+                Select all pages
+              </label>
+            )}
           </div>
 
           {pageUploading && (
@@ -453,10 +504,19 @@ export default function AdminEditInvestigationPage() {
                     onDragEnter={() => handleDragEnter(idx)}
                     onDragEnd={handleDragEnd}
                     onDragOver={(e) => e.preventDefault()}
-                    className="flex items-start gap-3 p-3 border border-border bg-paper-dark/20 hover:bg-paper-dark/40 transition-colors group"
+                    className={`flex items-start gap-3 p-3 border transition-colors ${
+                      selectedPages.has(page.id)
+                        ? "border-gold bg-gold/5"
+                        : "border-border bg-paper-dark/20 hover:bg-paper-dark/40"
+                    }`}
                   >
-                    <div className="mt-1 cursor-grab active:cursor-grabbing text-ink-faded/30 hover:text-ink-faded transition-colors">
-                      <GripVertical className="w-4 h-4" />
+                    <div className="flex items-center gap-1.5 mt-1">
+                      <input type="checkbox" checked={selectedPages.has(page.id)}
+                        onChange={() => toggleSelectPage(page.id)}
+                        className="w-3.5 h-3.5 accent-sepia cursor-pointer" />
+                      <div className="cursor-grab active:cursor-grabbing text-ink-faded/30 hover:text-ink-faded transition-colors">
+                        <GripVertical className="w-4 h-4" />
+                      </div>
                     </div>
 
                     <div className="w-20 h-28 shrink-0 border border-border overflow-hidden bg-paper">
@@ -506,7 +566,7 @@ export default function AdminEditInvestigationPage() {
                     </div>
 
                     <button onClick={() => handleDeletePage(page)}
-                      className="p-1.5 opacity-0 group-hover:opacity-100 hover:bg-red-50 transition-all rounded shrink-0" title="Delete page">
+                      className="p-1.5 hover:bg-red-50 transition-colors rounded shrink-0" title="Delete page">
                       <Trash2 className="w-3.5 h-3.5 text-red-400" />
                     </button>
                   </div>
