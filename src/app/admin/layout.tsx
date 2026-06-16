@@ -45,6 +45,7 @@ const navItems = [
   { href: "/admin/studio", label: "New Article", icon: Sparkles },
   { href: "/admin/dashboard?tab=comments", label: "Comments", icon: MessageSquare },
   { href: "/admin/dashboard?tab=contacts", label: "Contact Requests", icon: MailQuestion },
+  { href: "/admin/investigations", label: "Investigations", icon: FileText },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {

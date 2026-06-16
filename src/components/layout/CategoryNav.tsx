@@ -62,6 +62,14 @@ export default function CategoryNav() {
           >
             Home
           </Link>
+          <Link
+            href="/investigations"
+            className={`shrink-0 px-4 py-1 text-xs uppercase tracking-[0.18em] font-sans font-semibold transition-colors border-r border-border last:border-r-0 whitespace-nowrap flex items-center justify-center ${
+              pathname === "/investigations" ? "text-ink" : "text-ink-lighter hover:text-ink"
+            }`}
+          >
+            Investigations
+          </Link>
           {visibleCats.map((cat) => (
             <Link
               key={cat.slug}

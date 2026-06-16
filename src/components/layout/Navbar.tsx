@@ -102,6 +102,12 @@ export default function Navbar() {
               </Link>
             ))}
             <Link
+              href="/investigations"
+              className="flex items-center justify-center h-full px-3 text-[13px] uppercase tracking-[0.15em] text-ink-lighter hover:text-ink font-sans font-semibold whitespace-nowrap border-b-2 border-transparent hover:border-sepia/40 transition-all duration-200"
+            >
+              Investigations
+            </Link>
+            <Link
               href="/archive"
               className="flex items-center justify-center h-full px-3 text-[13px] uppercase tracking-[0.15em] text-ink-lighter hover:text-ink font-sans font-semibold whitespace-nowrap border-b-2 border-transparent hover:border-sepia/40 transition-all duration-200"
             >
@@ -137,6 +143,9 @@ export default function Navbar() {
               {unreadSections.has(cat.slug) && <RedDot />}
             </Link>
           ))}
+          <Link href="/investigations" onClick={() => setMobileOpen(false)} className="block py-2 px-3 text-sm font-serif text-ink-light hover:bg-paper-dark/50 rounded transition-colors">
+            Investigations
+          </Link>
           <Link href="/archive" onClick={() => setMobileOpen(false)} className="block py-2 px-3 text-sm font-serif text-ink-light hover:bg-paper-dark/50 rounded transition-colors">
             Archives
           </Link>
