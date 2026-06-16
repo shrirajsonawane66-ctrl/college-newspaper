@@ -34,6 +34,7 @@
   --font-baskerville: "Libre Baskerville", Georgia, serif;
   --font-source-serif: "Source Serif 4", Georgia, serif;
   --font-inter: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-archivo: "Archivo Narrow", sans-serif;
 
   --color-desk: #d8cfb4;
   --color-paper: #fdfaf0;
@@ -735,6 +736,144 @@
   color: #1a1a1a;
 }
 
+/* ─── Vintage 1920s Newspaper Article Styles ─── */
+
+.justified-columns {
+  text-align: justify;
+  text-justify: inter-word;
+}
+
+.hr-vintage {
+  height: 1px;
+  background-color: #1a1a1a;
+  margin: 0.5rem 0;
+  border: none;
+}
+
+.hr-vintage-thick {
+  height: 4px;
+  background-color: #1a1a1a;
+  margin: 0.25rem 0;
+  border: none;
+}
+
+.vintage-category {
+  font-family: var(--font-archivo), sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  letter-spacing: 0.1em;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.vintage-headline {
+  font-family: var(--font-playfair), serif;
+  font-size: 32px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+@media (min-width: 768px) {
+  .vintage-headline {
+    font-size: 48px;
+  }
+}
+
+.vintage-headline-md {
+  font-family: var(--font-playfair), serif;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.vintage-byline {
+  font-family: var(--font-archivo), sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  letter-spacing: 0.1em;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-style: italic;
+}
+
+.vintage-label-tight {
+  font-family: var(--font-archivo), sans-serif;
+  font-size: 12px;
+  line-height: 1.2;
+  font-weight: 600;
+}
+
+.vintage-body {
+  font-family: var(--font-source-serif), serif;
+  font-size: 18px;
+  line-height: 1.6;
+  font-weight: 400;
+}
+
+.vintage-body-sm {
+  font-family: var(--font-source-serif), serif;
+  font-size: 14px;
+  line-height: 1.5;
+  font-weight: 400;
+}
+
+.vintage-article-body {
+  text-align: justify;
+  text-justify: inter-word;
+}
+.vintage-article-body p {
+  margin-bottom: 1rem;
+}
+.vintage-article-body .dropcap::first-letter {
+  font-family: var(--font-playfair), serif;
+  float: left;
+  font-size: 3em;
+  line-height: 0.7;
+  padding-right: 0.25rem;
+  font-weight: 900;
+}
+
+.vintage-img-frame {
+  border: 1px solid #1a1a1a;
+  padding: 4px;
+  background: white;
+}
+.vintage-img-frame img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.vintage-img-caption {
+  font-family: var(--font-source-serif), serif;
+  font-size: 14px;
+  line-height: 1.5;
+  font-weight: 400;
+  font-style: italic;
+  margin-top: 8px;
+  padding: 0 8px;
+}
+
+.vintage-btn {
+  background-color: #1a1a1a;
+  color: #fdfaf0;
+  font-family: var(--font-archivo), sans-serif;
+  font-size: 12px;
+  line-height: 1.2;
+  font-weight: 600;
+  padding: 8px 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+  border: none;
+}
+.vintage-btn:hover {
+  background-color: #e1dac6;
+  color: #1a1a1a;
+}
+.vintage-btn:active {
+  transform: scale(0.95);
+}
+
 .category-label {
   font-family: var(--font-inter);
   font-size: 10px;
@@ -855,6 +994,134 @@
 @media (max-width: 640px) {
   .tech-news-bottom-grid {
     grid-template-columns: 1fr !important;
+  }
+}
+
+/* ─── Homepage 1920s Broadside Layout ─── */
+
+.home-surface { background-color: #fff9ee; }
+.home-text-primary { color: #000000; }
+.home-text-secondary { color: #76593c; }
+.home-text-on-surface-variant { color: #444748; }
+.home-bg-surface-container-low { background-color: #fbf3df; }
+.home-bg-surface-container-highest { background-color: #eae2ce; }
+.home-bg-tertiary-fixed { background-color: #e6e2df; }
+.home-bg-primary { background-color: #000000; }
+.home-text-surface { color: #fff9ee; }
+.home-border-primary { border-color: #000000; }
+.home-border-primary\/20 { border-color: rgba(0,0,0,0.2); }
+
+.home-subhead-caps {
+  font-family: var(--font-archivo), sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  letter-spacing: 0.1em;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.home-headline-lg {
+  font-family: var(--font-playfair), serif;
+  font-size: 48px;
+  line-height: 1.2;
+  font-weight: 800;
+}
+
+.home-headline-md {
+  font-family: var(--font-playfair), serif;
+  font-size: 24px;
+  line-height: 1.3;
+  font-weight: 700;
+}
+
+.home-body-main {
+  font-family: var(--font-source-serif), serif;
+  font-size: 18px;
+  line-height: 1.6;
+  font-weight: 400;
+}
+
+.home-body-sm {
+  font-family: var(--font-source-serif), serif;
+  font-size: 14px;
+  line-height: 1.5;
+  font-weight: 400;
+}
+
+.home-label-tight {
+  font-family: var(--font-archivo), sans-serif;
+  font-size: 12px;
+  line-height: 1.2;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.home-masthead-title {
+  font-family: var(--font-playfair), serif;
+  font-size: clamp(42px, 6vw, 72px);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.home-halftone {
+  filter: contrast(1.2) grayscale(1);
+  position: relative;
+}
+.home-halftone::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(#000 20%, transparent 20%);
+  background-size: 3px 3px;
+  opacity: 0.1;
+  pointer-events: none;
+}
+
+.home-newspaper-columns {
+  column-count: 3;
+  column-gap: 1.5rem;
+  column-rule: 1px solid #000;
+}
+@media (max-width: 768px) {
+  .home-newspaper-columns {
+    column-count: 1;
+    column-rule: none;
+  }
+}
+
+.home-justified {
+  text-align: justify;
+  hyphens: auto;
+}
+
+.home-dropcap::first-letter {
+  float: left;
+  font-size: 4.5rem;
+  line-height: 1;
+  padding-right: 0.5rem;
+  font-family: var(--font-playfair), serif;
+  font-weight: 900;
+}
+
+.home-vertical-rule {
+  border-left: 1px solid #000;
+}
+
+@media (max-width: 1024px) {
+  .home-grid-cols-12 {
+    grid-template-columns: 1fr !important;
+  }
+  .home-aside-left,
+  .home-aside-right {
+    display: none;
+  }
+  .home-center-main {
+    border-left: none !important;
+    border-right: none !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
   }
 }
 

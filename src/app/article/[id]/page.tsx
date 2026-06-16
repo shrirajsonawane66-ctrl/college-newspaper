@@ -261,162 +261,87 @@ export default function ArticlePage() {
       <BreakingNews />
       <Navbar />
       <CategoryNav />
-      <main style={{ backgroundColor: '#ffffff', minHeight: '100vh', padding: '40px 0' }}>
-        <article style={{ maxWidth: '740px', margin: '0 auto', padding: '0 24px' }}>
-          <div style={{
-            fontFamily: 'var(--font-sans)',
-            fontSize: '11px',
-            fontWeight: 700,
-            letterSpacing: '0.5px',
-            textTransform: 'uppercase',
-            color: '#a67c3e',
-            marginBottom: '16px',
-          }}>
-            <Link href={`/category/${article.categorySlug}`} style={{ color: '#a67c3e', textDecoration: 'none' }}>
-              {article.category}
-            </Link>
-          </div>
-
-          <h1 style={{
-            fontFamily: 'var(--font-source-serif)',
-            fontSize: 'clamp(28px, 4vw, 44px)',
-            fontWeight: 600,
-            lineHeight: 1.15,
-            color: '#121212',
-            margin: '0 0 12px',
-          }}>
-            {article.title}
-          </h1>
-
-          {article.subheadline && (
-            <p style={{
-              fontFamily: 'var(--font-source-serif)',
-              fontSize: '18px',
-              lineHeight: 1.4,
-              color: '#555',
-              fontStyle: 'italic',
-              margin: '0 0 16px',
-            }}>
-              {article.subheadline}
+      <main className="max-w-4xl mx-auto px-6 py-8" style={{ backgroundColor: '#fdfaf0', minHeight: '100vh' }}>
+        <article className="mb-10">
+          <div className="mb-6">
+            <p className="vintage-category mb-2" style={{ color: '#8b6f4e' }}>
+              <Link href={`/category/${article.categorySlug}`} style={{ color: '#8b6f4e', textDecoration: 'none' }}>
+                {article.category}
+              </Link>
             </p>
-          )}
+            <h1 className="vintage-headline mb-4">
+              {article.title}
+            </h1>
 
-          <div style={{
-            fontFamily: 'var(--font-sans)',
-            fontSize: '12px',
-            color: '#666',
-            paddingBottom: '16px',
-            marginBottom: '24px',
-            borderBottom: '1px solid #e2e2e2',
-            display: 'flex',
-            alignItems: 'center',
-            flexWrap: 'wrap',
-            gap: '8px',
-          }}>
-            By <strong>{article.author}</strong>
-            {article.authorRole && <span style={{ color: '#999' }}> | {article.authorRole}</span>}
-            <span style={{ color: '#999' }}> | </span>
-            <span style={{ color: '#999' }}>
-              {new Date(article.publishedAt).toLocaleDateString('en-US', {
-                weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
-              })}
-            </span>
-            <button
-              onClick={() => {
-                window.dispatchEvent(new CustomEvent('nova-read-article', {
-                  detail: {
-                    id: article.id,
-                    title: article.title,
-                    summary: article.summary,
-                    content: article.content,
-                    category: article.category,
-                    author: article.author,
-                  }
-                }))
-              }}
-              style={{
-                marginLeft: 'auto',
-                fontFamily: 'var(--font-sans)',
-                fontSize: '11px',
-                fontWeight: 700,
-                letterSpacing: '0.5px',
-                textTransform: 'uppercase',
-                color: '#a67c3e',
-                background: 'none',
-                border: '1px solid #a67c3e',
-                borderRadius: '4px',
-                padding: '6px 14px',
-                cursor: 'pointer',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                transition: 'background 0.2s ease',
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = '#a67c3e'; e.currentTarget.style.color = '#fff' }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#a67c3e' }}
-              title="Listen to this article with NOVA"
-            >
-              Listen with NOVA
-            </button>
+            {article.subheadline && (
+              <p className="vintage-body italic mb-4" style={{ color: '#5a5046' }}>
+                {article.subheadline}
+              </p>
+            )}
+
+            <div className="flex items-center gap-2 vintage-byline flex-wrap">
+              <span>By <strong>{article.author}</strong></span>
+              {article.authorRole && <><span style={{ opacity: 0.5 }}>|</span><span>{article.authorRole}</span></>}
+              <span style={{ opacity: 0.5 }}>|</span>
+              <span>
+                {new Date(article.publishedAt).toLocaleDateString('en-US', {
+                  weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+                })}
+              </span>
+              <button
+                onClick={() => {
+                  window.dispatchEvent(new CustomEvent('nova-read-article', {
+                    detail: {
+                      id: article.id,
+                      title: article.title,
+                      summary: article.summary,
+                      content: article.content,
+                      category: article.category,
+                      author: article.author,
+                    }
+                  }))
+                }}
+                className="vintage-btn ml-auto"
+                title="Listen to this article with NOVA"
+              >
+                Listen with NOVA
+              </button>
+            </div>
           </div>
 
           {imageUrl && (
-            <figure style={{ margin: '0 0 32px 0', position: 'relative' }}>
+            <div className="mb-8 vintage-img-frame">
               <div style={{ position: 'relative', width: '100%', height: 'clamp(240px, 50vw, 480px)', overflow: 'hidden' }}>
                 <Image
                   src={imageUrl}
                   alt={article.imageCaption || article.title}
                   fill
                   sizes="(max-width: 768px) 100vw, 740px"
-                  style={{ objectFit: 'cover' }}
+                  style={{ objectFit: 'cover', filter: 'grayscale(1) contrast(1.5)' }}
                   priority={true}
                   onError={() => setImageError(true)}
                 />
               </div>
               {article.imageCaption && (
-                <figcaption style={{
-                  fontFamily: 'var(--font-source-serif)',
-                  fontSize: '13px',
-                  color: '#777',
-                  fontStyle: 'italic',
-                  marginTop: '8px',
-                  paddingLeft: '4px',
-                }}>
+                <p className="vintage-img-caption">
                   {article.imageCaption}
                   {article.imageCredit && <span> &mdash; Photo: {article.imageCredit}</span>}
-                </figcaption>
+                </p>
               )}
-            </figure>
+            </div>
           )}
 
-          <div className="article-body-text"
-            style={{
-              fontFamily: 'var(--font-source-serif)',
-              fontSize: '17px',
-              lineHeight: 1.75,
-              color: '#333',
-            }}
+          <div
+            className={`vintage-article-body vintage-body ${article.dropCap ? 'dropcap' : ''}`}
             dangerouslySetInnerHTML={{ __html: article.content }}
           />
 
-          <div style={{
-            borderTop: '1px solid #e2e2e2',
-            marginTop: '40px',
-            paddingTop: '32px',
-          }}>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              marginBottom: '24px',
-            }}>
-              <MessageCircle className="w-5 h-5" style={{ color: '#555' }} />
-              <span style={{
-                fontFamily: 'var(--font-sans)',
-                fontSize: '16px',
-                fontWeight: 700,
-                color: '#121212',
-              }}>
+          <div className="hr-vintage-thick mt-12 mb-8"></div>
+
+          <div>
+            <div className="flex items-center gap-2 mb-6">
+              <MessageCircle className="w-5 h-5" style={{ color: '#5a5046' }} />
+              <span className="vintage-headline-md" style={{ fontSize: '16px' }}>
                 {commentsList.length} Comment{commentsList.length !== 1 ? 's' : ''}
               </span>
             </div>
@@ -426,13 +351,7 @@ export default function ArticlePage() {
                 <CommentCard key={comment.id} comment={comment} />
               ))}
               {commentsList.length === 0 && (
-                <p style={{
-                  fontFamily: 'var(--font-sans)',
-                  fontSize: '14px',
-                  color: '#888',
-                  padding: '24px 0',
-                  textAlign: 'center',
-                }}>
+                <p className="vintage-body-sm text-center py-6" style={{ color: '#8a7e72' }}>
                   No comments yet. Be the first to share your thoughts.
                 </p>
               )}
@@ -440,24 +359,12 @@ export default function ArticlePage() {
           </div>
         </article>
 
-        <div style={{
-          maxWidth: '1200px',
-          margin: '40px auto 0',
-          padding: '0 16px',
-          borderTop: '1px solid #e2e2e2',
-          paddingTop: '32px',
-        }}>
-          <div style={{
-            fontFamily: 'var(--font-sans)',
-            fontSize: '11px',
-            fontWeight: 700,
-            letterSpacing: '0.5px',
-            textTransform: 'uppercase',
-            color: '#000',
-            marginBottom: '16px',
-          }}>
+        <div className="hr-vintage mb-8"></div>
+
+        <div className="mb-16">
+          <p className="vintage-category mb-4" style={{ color: '#1a1a1a' }}>
             More in {article.category}
-          </div>
+          </p>
           <RelatedArticles currentId={article.id} category={article.category} articles={allArticles} />
         </div>
       </main>
