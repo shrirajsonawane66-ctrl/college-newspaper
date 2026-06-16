@@ -13,46 +13,6 @@ import { getSupabase } from "@/lib/supabase";
 import { getArticleImage, type Article } from "@/lib/data";
 import { TechNewsSection } from "@/components/sections/TechNewsSection";
 
-interface WeatherData {
-  temp: number;
-  condition: string;
-  city: string;
-  icon: string;
-}
-
-const WMO_CODES: Record<number, { label: string; icon: string }> = {
-  0: { label: "Clear", icon: "☀" },
-  1: { label: "Mostly Clear", icon: "🌤" },
-  2: { label: "Partly Cloudy", icon: "⛅" },
-  3: { label: "Overcast", icon: "☁" },
-  45: { label: "Foggy", icon: "🌫" },
-  48: { label: "Rime Fog", icon: "🌫" },
-  51: { label: "Light Drizzle", icon: "🌦" },
-  53: { label: "Drizzle", icon: "🌦" },
-  55: { label: "Heavy Drizzle", icon: "🌧" },
-  61: { label: "Light Rain", icon: "🌦" },
-  63: { label: "Rain", icon: "🌧" },
-  65: { label: "Heavy Rain", icon: "🌧" },
-  71: { label: "Light Snow", icon: "🌨" },
-  73: { label: "Snow", icon: "🌨" },
-  75: { label: "Heavy Snow", icon: "❄" },
-  80: { label: "Light Showers", icon: "🌦" },
-  81: { label: "Showers", icon: "🌧" },
-  82: { label: "Heavy Showers", icon: "🌧" },
-  95: { label: "Thunderstorm", icon: "⛈" },
-  96: { label: "Thunderstorm", icon: "⛈" },
-  99: { label: "Thunderstorm", icon: "⛈" },
-};
-
-function getSunPhase(): string {
-  const h = new Date().getHours();
-  if (h < 6) return "Night";
-  if (h < 12) return "Morning";
-  if (h < 17) return "Afternoon";
-  if (h < 20) return "Evening";
-  return "Night";
-}
-
 interface ArticleRow {
   id: string;
   title: string;
@@ -79,13 +39,25 @@ interface ArticleRow {
   tags: string;
 }
 
+const DASHBOARD_KEY = "dashboard_last_viewed";
+
+function getLastViewed(): string {
+  if (typeof window === "undefined") return "";
+  return localStorage.getItem(DASHBOARD_KEY) || "";
+}
+
+function markDashboardViewed() {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(DASHBOARD_KEY, new Date().toISOString());
+}
+
 export default function Home() {
   const [articlesList, setArticlesList] = useState<Article[]>([]);
   const [techNewsData, setTechNewsData] = useState<{ news: any[]; totalPages: number }>({ news: [], totalPages: 4 });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [weather, setWeather] = useState<WeatherData | null>(null);
-  const [weatherLoading, setWeatherLoading] = useState(true);
+  const [newArticleCount, setNewArticleCount] = useState(0);
+  const [newInvestigationCount, setNewInvestigationCount] = useState(0);
 
   const fetchTechNewsInitial = useCallback(async () => {
     try {
@@ -98,7 +70,9 @@ export default function Home() {
 
   useEffect(() => {
     async function fetchData() {
-      const [articlesResult, techNewsResult] = await Promise.all([
+      const lastViewed = getLastViewed();
+
+      const [articlesResult, techNewsResult, investigationsResult] = await Promise.all([
         getSupabase()
           .from("articles")
           .select("*")
@@ -106,6 +80,10 @@ export default function Home() {
           .order("created_at", { ascending: false })
           .limit(8),
         fetchTechNewsInitial(),
+        getSupabase()
+          .from("investigations")
+          .select("id, published_at")
+          .eq("status", "published"),
       ]);
 
       if (articlesResult.error) {
@@ -143,6 +121,19 @@ export default function Home() {
         };
       });
 
+      if (lastViewed) {
+        const cutoff = new Date(lastViewed);
+        const newArts = mapped.filter((a) => new Date(a.publishedAt) > cutoff).length;
+        setNewArticleCount(newArts);
+        const invCount = (investigationsResult.data || []).filter(
+          (i: any) => i.published_at && new Date(i.published_at) > cutoff
+        ).length;
+        setNewInvestigationCount(invCount);
+      } else {
+        setNewArticleCount(mapped.length);
+        setNewInvestigationCount((investigationsResult.data || []).length);
+      }
+
       setArticlesList(mapped);
       setTechNewsData(techNewsResult);
       setLoading(false);
@@ -150,42 +141,6 @@ export default function Home() {
 
     fetchData();
   }, [fetchTechNewsInitial]);
-
-  useEffect(() => {
-    async function fetchWeather(lat: number, lon: number) {
-      try {
-        const [weatherRes, geoRes] = await Promise.all([
-          fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code&timezone=auto`),
-          fetch(`https://geocoding-api.open-meteo.com/v1/reverse?latitude=${lat}&longitude=${lon}&count=1&language=en`),
-        ]);
-        const wdata = await weatherRes.json();
-        const gdata = await geoRes.json();
-        const code = wdata.current.weather_code as number;
-        const entry = WMO_CODES[code] || { label: "Unknown", icon: "�" };
-        const city = gdata.results?.[0]?.name || wdata.timezone?.split("/")[1]?.replace("_", " ") || "Local";
-        setWeather({
-          temp: Math.round(wdata.current.temperature_2m),
-          condition: entry.label,
-          icon: entry.icon,
-          city,
-        });
-      } catch {
-        setWeather(null);
-      } finally {
-        setWeatherLoading(false);
-      }
-    }
-
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => fetchWeather(pos.coords.latitude, pos.coords.longitude),
-        () => fetchWeather(40.7128, -74.006),
-        { timeout: 5000, enableHighAccuracy: false }
-      );
-    } else {
-      fetchWeather(40.7128, -74.006);
-    }
-  }, []);
 
   if (loading) {
     return (
@@ -257,18 +212,34 @@ export default function Home() {
           <div className="grid grid-cols-12 gap-6">
             {/* LEFT SIDEBAR (3 cols) */}
             <aside className="col-span-3 flex flex-col gap-8">
+              {/* Mini Notification Dashboard */}
               <section style={{ border: "1px solid #000", padding: "16px", backgroundColor: "#fbf3df" }}>
-                <h2 className="home-subhead-caps home-text-primary" style={{ borderBottom: "1px solid #000", paddingBottom: "4px", marginBottom: "12px" }}>Campus Dashboard</h2>
-                <div className="flex justify-between items-end mb-2">
-                  <span className="home-label-tight home-text-primary">Enrolled</span>
-                  <span className="home-headline-md home-text-primary" style={{ fontSize: "20px" }}>+12.4%</span>
+                <h2 className="home-subhead-caps home-text-primary" style={{ borderBottom: "1px solid #000", paddingBottom: "4px", marginBottom: "12px" }}>Latest Updates</h2>
+                <div className="space-y-3">
+                  <Link href="/archive" onClick={markDashboardViewed}
+                    style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 12px", backgroundColor: "#fff9ee", border: "1px solid #000", textDecoration: "none" }}>
+                    <span className="home-label-tight home-text-primary tracking-wider">ARTICLES</span>
+                    {newArticleCount > 0 && (
+                      <span style={{ backgroundColor: "#dc2626", color: "#fff", borderRadius: "999px", padding: "1px 8px", fontSize: "11px", fontFamily: "var(--font-archivo)", fontWeight: 700, lineHeight: "1.4" }}>
+                        {newArticleCount}
+                      </span>
+                    )}
+                  </Link>
+                  <Link href="/investigations" onClick={markDashboardViewed}
+                    style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 12px", backgroundColor: "#fff9ee", border: "1px solid #000", textDecoration: "none" }}>
+                    <span className="home-label-tight home-text-primary tracking-wider">INVESTIGATIONS</span>
+                    {newInvestigationCount > 0 && (
+                      <span style={{ backgroundColor: "#dc2626", color: "#fff", borderRadius: "999px", padding: "1px 8px", fontSize: "11px", fontFamily: "var(--font-archivo)", fontWeight: 700, lineHeight: "1.4" }}>
+                        {newInvestigationCount}
+                      </span>
+                    )}
+                  </Link>
+                  <Link href="/archive" onClick={markDashboardViewed}
+                    style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 12px", backgroundColor: "#fff9ee", border: "1px solid #000", textDecoration: "none" }}>
+                    <span className="home-label-tight home-text-primary tracking-wider">ALL CONTENT</span>
+                    <span style={{ fontSize: "11px", fontFamily: "var(--font-archivo)", fontWeight: 700, color: "#444748" }}>→</span>
+                  </Link>
                 </div>
-                <div className="space-y-2" style={{ borderTop: "1px solid rgba(0,0,0,0.2)", paddingTop: "8px" }}>
-                  <div className="flex justify-between home-label-tight home-text-primary"><span>Freshmen</span><span>2,450</span></div>
-                  <div className="flex justify-between home-label-tight home-text-primary"><span>Sophomores</span><span>1,980</span></div>
-                  <div className="flex justify-between home-label-tight home-text-primary"><span>Juniors</span><span>1,720</span></div>
-                </div>
-                <p className="home-body-sm home-text-on-surface-variant italic mt-4 text-center">"Record enrollment this academic year."</p>
               </section>
 
               {secondary.length > 0 && (
@@ -335,20 +306,22 @@ export default function Home() {
 
             {/* RIGHT SIDEBAR (3 cols) */}
             <aside className="col-span-3 flex flex-col gap-8">
-              {/* Editorial Desk */}
-              <section style={{ borderBottom: "1px solid #000", paddingBottom: "32px" }}>
-                <h2 className="home-subhead-caps home-text-primary uppercase mb-4" style={{ backgroundColor: "#e6e2df", padding: "4px 8px", display: "inline-block" }}>The Editorial Desk</h2>
-                {editorial.map((art) => (
-                  <Link key={art.id} href={`/article/${art.id}`} className="block no-underline mb-6 group">
+              {/* Editorial articles (no header) */}
+              {editorial.map((art, i) => (
+                <section key={art.id} style={i === 0 ? {} : { borderTop: "1px solid #000", paddingTop: "24px" }}>
+                  <Link href={`/article/${art.id}`} className="block no-underline group">
                     <h3 className="home-headline-md home-text-primary hover:underline decoration-1 underline-offset-4">{art.title}</h3>
                     <p className="home-body-sm home-text-on-surface-variant mt-2">{art.summary}</p>
+                    {art.author && (
+                      <p className="home-body-sm home-text-on-surface-variant mt-2 italic" style={{ fontSize: "12px" }}>— {art.author}</p>
+                    )}
                   </Link>
-                ))}
-              </section>
+                </section>
+              ))}
 
               {/* Arts Section */}
               {artsArticle && (
-                <section>
+                <section style={{ borderTop: "1px solid #000", paddingTop: "24px" }}>
                   <span className="home-subhead-caps home-text-secondary tracking-widest block mb-4">■ THE CULTURAL REVIEW ■</span>
                   <div style={{ border: "1px solid #000", padding: "16px" }}>
                     <Link href={`/article/${artsArticle.id}`} className="no-underline">
@@ -358,28 +331,6 @@ export default function Home() {
                   </div>
                 </section>
               )}
-
-              {/* The Almanac — Live Weather */}
-              <section style={{ borderTop: "4px solid #000", paddingTop: "16px", marginTop: "auto" }}>
-                <div style={{ backgroundColor: "#eae2ce", padding: "16px", display: "flex", flexDirection: "column", alignItems: "center", border: "1px solid rgba(0,0,0,0.1)" }}>
-                  <span className="home-subhead-caps home-text-secondary uppercase">The Almanac</span>
-                  {weatherLoading ? (
-                    <div className="home-label-tight home-text-on-surface-variant mt-2" style={{ fontSize: "11px" }}>Fetching conditions...</div>
-                  ) : weather ? (
-                    <>
-                      <div className="home-body-sm home-text-on-surface-variant mt-1" style={{ fontSize: "11px" }}>{weather.city}</div>
-                      <div className="flex items-center gap-3 my-2">
-                        <span style={{ fontSize: "36px", lineHeight: 1 }}>{weather.icon}</span>
-                        <span className="home-headline-lg" style={{ fontSize: "32px", lineHeight: 1 }}>{weather.temp}°</span>
-                      </div>
-                      <div className="home-label-tight home-text-primary uppercase">{weather.condition}</div>
-                      <p className="home-body-sm home-text-on-surface-variant text-center mt-2">{getSunPhase()} edition</p>
-                    </>
-                  ) : (
-                    <div className="home-label-tight home-text-on-surface-variant mt-2" style={{ fontSize: "11px" }}>Unavailable</div>
-                  )}
-                </div>
-              </section>
             </aside>
           </div>
         </div>
