@@ -4,13 +4,14 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
   ArrowLeft, Upload, Trash2, Check, X, GripVertical,
-  ImageUp, Save,
+  ImageUp, Save, ImageIcon,
 } from "lucide-react";
 import { getSupabase } from "@/lib/supabase";
 import { useAuth } from "@/hooks/useAuth";
 import {
   slugify,
   uploadInvestigationPage,
+  uploadInvestigationCover,
   deleteInvestigationPageImage,
   type Investigation,
   type InvestigationPage,
@@ -28,15 +29,16 @@ function showNotification(type: "success" | "error", message: string) {
   setTimeout(() => { el.style.opacity = "0"; el.style.transition = "opacity 0.3s"; setTimeout(() => el.remove(), 300); }, 3000);
 }
 
-function compressImage(file: File, maxWidth = 1920, quality = 0.8): Promise<Blob> {
+function compressImage(file: File, maxDim = 1200, quality = 0.7): Promise<Blob> {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.onload = () => {
       let w = img.width;
       let h = img.height;
-      if (w > maxWidth) {
-        h = Math.round((h * maxWidth) / w);
-        w = maxWidth;
+      if (w > maxDim || h > maxDim) {
+        const ratio = Math.min(maxDim / w, maxDim / h);
+        w = Math.round(w * ratio);
+        h = Math.round(h * ratio);
       }
       const canvas = document.createElement("canvas");
       canvas.width = w;
@@ -44,14 +46,14 @@ function compressImage(file: File, maxWidth = 1920, quality = 0.8): Promise<Blob
       const ctx = canvas.getContext("2d");
       if (!ctx) { reject(new Error("Canvas context unavailable")); return; }
       ctx.drawImage(img, 0, 0, w, h);
-      canvas.toBlob(
-        (blob) => {
-          if (blob) resolve(blob);
-          else reject(new Error("Compression failed"));
-        },
-        "image/webp",
-        quality
-      );
+      const tryFormat = (fmt: string, q: number) =>
+        new Promise<Blob>((res, rej) => {
+          canvas.toBlob((b) => { if (b) res(b); else rej(null); }, fmt, q);
+        });
+      tryFormat("image/webp", quality)
+        .catch(() => tryFormat("image/jpeg", 0.85))
+        .then(resolve)
+        .catch(() => reject(new Error("Compression failed")));
     };
     img.onerror = () => reject(new Error("Failed to load image for compression"));
     img.src = URL.createObjectURL(file);
@@ -71,7 +73,9 @@ export default function AdminEditInvestigationPage() {
 
   const [form, setForm] = useState({ title: "", slug: "", summary: "", category: "", cover_image_url: "" });
 
-  const [uploading, setUploading] = useState(false);
+  const [coverUploading, setCoverUploading] = useState(false);
+
+  const [pageUploading, setPageUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadTotal, setUploadTotal] = useState(0);
   const [uploadComplete, setUploadComplete] = useState(0);
@@ -85,6 +89,7 @@ export default function AdminEditInvestigationPage() {
   const dragItem = useRef<number | null>(null);
   const dragOverItem = useRef<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const coverInputRef = useRef<HTMLInputElement>(null);
 
   const fetchData = useCallback(async () => {
     const [invRes, pagesRes] = await Promise.all([
@@ -140,6 +145,22 @@ export default function AdminEditInvestigationPage() {
     setSaving(false);
   };
 
+  const handleCoverUpload = async (file: File) => {
+    if (!file.type.startsWith("image/")) { showNotification("error", "Please select an image."); return; }
+    setCoverUploading(true);
+    try {
+      const compressed = await compressImage(file, 800, 0.7);
+      const compressedFile = new File([compressed], "cover.webp", { type: "image/webp" });
+      const url = await uploadInvestigationCover(compressedFile, id);
+      setForm((prev) => ({ ...prev, cover_image_url: url }));
+      setDirty(true);
+      showNotification("success", "Cover image uploaded.");
+    } catch (err: any) {
+      showNotification("error", `Cover upload failed: ${err.message}`);
+    }
+    setCoverUploading(false);
+  };
+
   const handleSaveCaption = async (pageId: string) => {
     const { error } = await getSupabase()
       .from("investigation_pages")
@@ -178,7 +199,7 @@ export default function AdminEditInvestigationPage() {
     setUploadTotal(fileArray.length);
     setUploadComplete(0);
     setUploadProgress(0);
-    setUploading(true);
+    setPageUploading(true);
 
     for (let i = 0; i < fileArray.length; i++) {
       const file = fileArray[i];
@@ -208,7 +229,7 @@ export default function AdminEditInvestigationPage() {
     }
 
     setUploadErrors(errs);
-    setUploading(false);
+    setPageUploading(false);
     if (errs.length === 0) {
       showNotification("success", `${fileArray.length} page(s) uploaded.`);
     }
@@ -321,10 +342,38 @@ export default function AdminEditInvestigationPage() {
                   className="w-full px-2.5 py-1.5 text-sm border border-border bg-paper focus:outline-none font-sans" />
               </div>
               <div>
-                <label className="block text-[9px] uppercase tracking-[0.15em] text-ink-lighter font-semibold mb-1 font-sans">Cover Image URL</label>
-                <input type="text" value={form.cover_image_url} onChange={(e) => { setForm({ ...form, cover_image_url: e.target.value }); setDirty(true); }}
-                  placeholder="https://..."
-                  className="w-full px-2.5 py-1.5 text-sm border border-border bg-paper focus:outline-none font-sans" />
+                <label className="block text-[9px] uppercase tracking-[0.15em] text-ink-lighter font-semibold mb-1 font-sans">Cover Image</label>
+                <div className="flex gap-2">
+                  {form.cover_image_url ? (
+                    <div className="relative group w-full">
+                      <img src={form.cover_image_url} alt="Cover"
+                        className="w-full h-20 object-cover border border-border" />
+                      <div className="absolute inset-0 bg-ink/0 group-hover:bg-ink/40 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
+                        <div className="flex gap-1">
+                          <button onClick={() => coverInputRef.current?.click()}
+                            className="px-2 py-1 bg-paper/90 text-ink text-[9px] uppercase tracking-wider font-semibold hover:bg-paper transition-colors">
+                            Change
+                          </button>
+                          <button onClick={() => { setForm({ ...form, cover_image_url: "" }); setDirty(true); }}
+                            className="px-2 py-1 bg-red-500/80 text-white text-[9px] uppercase tracking-wider font-semibold hover:bg-red-500 transition-colors">
+                            Remove
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <button onClick={() => coverInputRef.current?.click()} disabled={coverUploading}
+                      className="w-full h-20 border-2 border-dashed border-border flex items-center justify-center gap-2 text-xs text-ink-faded font-sans hover:border-gold-light hover:bg-paper-dark/50 transition-all disabled:opacity-50">
+                      {coverUploading ? (
+                        <span className="inline-block w-4 h-4 border border-ink/20 border-t-ink rounded-full animate-spin" />
+                      ) : (
+                        <><ImageIcon className="w-4 h-4" /> Upload Cover</>
+                      )}
+                    </button>
+                  )}
+                  <input ref={coverInputRef} type="file" accept="image/*" className="hidden"
+                    onChange={(e) => { const f = e.target.files?.[0]; if (f) handleCoverUpload(f); }} />
+                </div>
               </div>
             </div>
             {dirty && (
@@ -339,7 +388,7 @@ export default function AdminEditInvestigationPage() {
               Pages <span className="text-ink-faded text-base font-sans font-normal ml-1">({pages.length})</span>
             </h2>
             <div className="flex items-center gap-2">
-              <button onClick={() => fileInputRef.current?.click()} disabled={uploading}
+              <button onClick={() => fileInputRef.current?.click()} disabled={pageUploading}
                 className="flex items-center gap-1.5 px-3 py-1.5 bg-ink text-paper text-xs uppercase tracking-wider font-sans font-semibold hover:bg-ink-light transition-colors disabled:opacity-50">
                 <ImageUp className="w-3.5 h-3.5" /> Add Pages
               </button>
@@ -354,7 +403,7 @@ export default function AdminEditInvestigationPage() {
             </div>
           </div>
 
-          {uploading && (
+          {pageUploading && (
             <div className="px-5 py-4 border-b border-border bg-paper-dark/30">
               <div className="flex items-center justify-between mb-1.5">
                 <span className="text-xs text-ink-faded font-sans">
@@ -379,7 +428,7 @@ export default function AdminEditInvestigationPage() {
           )}
 
           <div className="p-5">
-            {pages.length === 0 && !uploading && (
+            {pages.length === 0 && !pageUploading && (
               <div
                 className="border-2 border-dashed border-border p-8 text-center cursor-pointer hover:border-gold-light hover:bg-paper-dark/50 transition-all"
                 onClick={() => fileInputRef.current?.click()}

@@ -87,3 +87,33 @@ export async function deleteInvestigationPageImage(
     await supabase.storage.from(STORAGE_BUCKET).remove(paths);
   }
 }
+
+export async function uploadInvestigationCover(
+  file: File,
+  investigationId: string,
+  onProgress?: (pct: number) => void
+): Promise<string> {
+  const supabase = (await import("@/lib/supabase")).getSupabase();
+  const ext = file.name.split(".").pop() || "jpg";
+  const filePath = `${investigationId}/cover.${ext}`;
+
+  onProgress?.(10);
+
+  const { data, error } = await supabase.storage
+    .from(STORAGE_BUCKET)
+    .upload(filePath, file, {
+      cacheControl: "3600",
+      upsert: true,
+    });
+
+  if (error) throw new Error(`Cover upload failed: ${error.message}`);
+
+  onProgress?.(90);
+
+  const {
+    data: { publicUrl },
+  } = supabase.storage.from(STORAGE_BUCKET).getPublicUrl(data.path);
+
+  onProgress?.(100);
+  return publicUrl;
+}
