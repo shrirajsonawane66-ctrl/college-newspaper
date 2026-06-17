@@ -209,9 +209,9 @@ export default function Home() {
       <NewsTicker articles={a} />
       <main className="home-surface" style={{ minHeight: "100vh" }}>
         <div style={{ maxWidth: "1280px", margin: "0 auto", padding: "32px 2rem" }}>
-          <div className="grid grid-cols-12 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             {/* LEFT SIDEBAR (3 cols) */}
-            <aside className="col-span-3 flex flex-col gap-8">
+            <aside className="lg:col-span-3 flex flex-col gap-8">
               {/* Mini Notification Dashboard */}
               <section style={{ border: "1px solid #000", padding: "16px", backgroundColor: "#fbf3df" }}>
                 <h2 className="home-subhead-caps home-text-primary" style={{ borderBottom: "1px solid #000", paddingBottom: "4px", marginBottom: "12px" }}>Latest Updates</h2>
@@ -266,7 +266,7 @@ export default function Home() {
             </aside>
 
             {/* CENTER — MAIN STORY (6 cols) */}
-            <article className="col-span-6" style={{ borderLeft: "1px solid #000", borderRight: "1px solid #000", padding: "0 24px" }}>
+            <article className="lg:col-span-6" style={{ borderLeft: "1px solid #000", borderRight: "1px solid #000", padding: "0 24px" }}>
               <div className="mb-6">
                 <span className="home-subhead-caps home-text-secondary">Feature Exposition</span>
                 <h2 className="home-headline-lg home-text-primary leading-none mb-4 mt-2">{featured.title}</h2>
@@ -305,7 +305,7 @@ export default function Home() {
             </article>
 
             {/* RIGHT SIDEBAR (3 cols) */}
-            <aside className="col-span-3 flex flex-col gap-8">
+            <aside className="lg:col-span-3 flex flex-col gap-8">
               {/* Editorial articles (no header) */}
               {editorial.map((art, i) => (
                 <section key={art.id} style={i === 0 ? {} : { borderTop: "1px solid #000", paddingTop: "24px" }}>
